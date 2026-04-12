@@ -1,0 +1,30 @@
+{
+  "testEnvironment": "jsdom",
+  "testMatch": [
+    "**/__tests__/**/*.test.js",
+    "**/__tests__/**/*.test.jsx",
+    "**/__tests__/**/*.test.ts",
+    "**/__tests__/**/*.test.tsx"
+  ],
+  "transform": {
+    "^.+\\.(ts|tsx)$": "ts-jest"
+  },
+  "moduleNameMapper": {
+    "^@/(.*)$": "<rootDir>/$1"
+  },
+  "setupFilesAfterEnv": ["<rootDir>/jest.setup.js"],
+  "collectCoverageFrom": [
+    "app/**/*.{js,jsx,ts,tsx}",
+    "components/**/*.{js,jsx,ts,tsx}",
+    "lib/**/*.{js,jsx,ts,tsx}",
+    "!**/node_modules/**",
+    "!**/dist/**",
+    "!**/coverage/**"
+  ],
+  "coveragePathIgnorePatterns": [
+    "/node_modules/",
+    "/.next/",
+    "/coverage/",
+    "jest.setup.js"
+  ]
+}
