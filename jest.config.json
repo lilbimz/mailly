@@ -26,5 +26,35 @@
     "/.next/",
     "/coverage/",
     "jest.setup.js"
+  ],
+  "projects": [
+    {
+      "displayName": "api",
+      "testEnvironment": "node",
+      "testMatch": ["<rootDir>/app/api/**/__tests__/**/*.test.ts"],
+      "transform": {
+        "^.+\\.(ts|tsx)$": "ts-jest"
+      },
+      "moduleNameMapper": {
+        "^@/(.*)$": "<rootDir>/$1"
+      }
+    },
+    {
+      "displayName": "client",
+      "testEnvironment": "jsdom",
+      "testMatch": [
+        "<rootDir>/components/**/__tests__/**/*.test.{ts,tsx}",
+        "<rootDir>/lib/**/__tests__/**/*.test.{ts,tsx}",
+        "<rootDir>/app/**/__tests__/**/*.test.{ts,tsx}"
+      ],
+      "testPathIgnorePatterns": ["<rootDir>/app/api"],
+      "transform": {
+        "^.+\\.(ts|tsx)$": "ts-jest"
+      },
+      "moduleNameMapper": {
+        "^@/(.*)$": "<rootDir>/$1"
+      },
+      "setupFilesAfterEnv": ["<rootDir>/jest.setup.js"]
+    }
   ]
 }
