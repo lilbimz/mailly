@@ -7,7 +7,11 @@
     "**/__tests__/**/*.test.tsx"
   ],
   "transform": {
-    "^.+\\.(ts|tsx)$": "ts-jest"
+    "^.+\\.(ts|tsx)$": ["ts-jest", {
+      "tsconfig": {
+        "jsx": "react-jsx"
+      }
+    }]
   },
   "moduleNameMapper": {
     "^@/(.*)$": "<rootDir>/$1"
@@ -33,7 +37,11 @@
       "testEnvironment": "node",
       "testMatch": ["<rootDir>/app/api/**/__tests__/**/*.test.ts"],
       "transform": {
-        "^.+\\.(ts|tsx)$": "ts-jest"
+        "^.+\\.(ts|tsx)$": ["ts-jest", {
+          "tsconfig": {
+            "jsx": "react-jsx"
+          }
+        }]
       },
       "moduleNameMapper": {
         "^@/(.*)$": "<rootDir>/$1"
@@ -49,7 +57,11 @@
       ],
       "testPathIgnorePatterns": ["<rootDir>/app/api"],
       "transform": {
-        "^.+\\.(ts|tsx)$": "ts-jest"
+        "^.+\\.(ts|tsx)$": ["ts-jest", {
+          "tsconfig": {
+            "jsx": "react-jsx"
+          }
+        }]
       },
       "moduleNameMapper": {
         "^@/(.*)$": "<rootDir>/$1"
