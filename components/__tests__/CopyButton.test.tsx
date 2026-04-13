@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@/lib/__tests__/test-utils';
+import { render, screen, fireEvent, waitFor, act } from '@/lib/__tests__/test-utils';
 import { CopyButton } from '../CopyButton';
 
 describe('CopyButton', () => {
@@ -330,7 +330,9 @@ describe('CopyButton', () => {
       });
 
       // Fast-forward time by 2 seconds
-      jest.advanceTimersByTime(2000);
+      act(() => {
+        jest.advanceTimersByTime(2000);
+      });
 
       await waitFor(() => {
         expect(screen.queryByText('Copy not supported in your browser')).not.toBeInTheDocument();

@@ -1,11 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { Duration, TemporaryEmail } from '@/types';
-import { emailApiClient, ApiError } from '@/lib/emailApiClient';
+import { Duration } from '@/types';
 
 interface EmailCreatorProps {
-  onEmailCreated: (email: TemporaryEmail) => void;
+  onCreateEmail: (duration: Duration, domain?: string) => Promise<void>;
   disabled?: boolean;
 }
 
@@ -15,8 +14,17 @@ const DURATION_OPTIONS: { value: Duration; label: string }[] = [
   { value: '1day', label: '1 day' },
 ];
 
-export default function EmailCreator({ onEmailCreated, disabled = false }: EmailCreatorProps) {
+// List of reliable domains that accept emails
+const DOMAIN_OPTIONS = [
+  { value: 'nondon.store', label: '📧 nondon.store (Recommended)' },
+  { value: 'norion.shop', label: '📧 norion.shop' },
+  { value: 'noniton.store', label: '📧 noniton.store' },
+  { value: 'random', label: '🎲 Random Domain' },
+];
+
+export default function EmailCreator({ onCreateEmail, disabled = false }: EmailCreatorProps) {
   const [selectedDuration, setSelectedDuration] = useState<Duration>('1hr');
+  const [selectedDomain, setSelectedDomain] = useState<string>('nondon.store');
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -25,10 +33,10 @@ export default function EmailCreator({ onEmailCreated, disabled = false }: Email
     setIsCreating(true);
 
     try {
-      const email = await emailApiClient.createEmail(selectedDuration);
-      onEmailCreated(email);
+      const domain = selectedDomain === 'random' ? undefined : selectedDomain;
+      await onCreateEmail(selectedDuration, domain);
     } catch (err) {
-      if (err instanceof ApiError) {
+      if (err instanceof Error) {
         setError(err.message);
       } else {
         setError('Failed to create email. Please try again.');
@@ -68,6 +76,27 @@ export default function EmailCreator({ onEmailCreated, disabled = false }: Email
             </button>
           ))}
         </div>
+      </div>
+
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+          Select Domain
+        </label>
+        <select
+          value={selectedDomain}
+          onChange={(e) => setSelectedDomain(e.target.value)}
+          disabled={disabled || isCreating}
+          className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {DOMAIN_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+          💡 Tip: Use nondon.store for best email delivery reliability
+        </p>
       </div>
 
       <button

@@ -17,6 +17,12 @@ export function CopyButton({ text, label = 'Copy' }: CopyButtonProps) {
     // Check if Clipboard API is supported
     if (!navigator.clipboard) {
       setError('Copy not supported in your browser');
+      
+      // Clear error after 2 seconds
+      setTimeout(() => {
+        setError(null);
+      }, 2000);
+      
       return;
     }
 
