@@ -17,18 +17,20 @@ interface BoomlifyMessage {
   id: string;
   from: string;
   subject: string;
-  receivedAt: string;
-  preview: string;
+  body: string;
+  received_at: string;
 }
 
-interface BoomlifyMessagesResponse {
+interface BoomlifyEmailResponse {
   success: boolean;
-  data?: {
-    messages: BoomlifyMessage[];
+  email?: {
+    id: string;
+    address: string;
+    message_count: number;
+    messages?: BoomlifyMessage[];
   };
   error?: {
     message: string;
-    code?: string;
   };
 }
 
@@ -79,12 +81,15 @@ export async function GET(
       );
     }
 
-    // Call Boomlify API to fetch message list
-    const boomlifyUrl = `${BOOMLIFY_API_BASE}/emails/${emailId}/messages?api_key=${BOOMLIFY_API_KEY}`;
+    // Call Boomlify API to fetch email and messages
+    // Use GET /api/v1/emails/{id} endpoint (not /emails/{id}/messages which is premium)
+    // This endpoint returns email details + messages for time-based API emails
+    const boomlifyUrl = `${BOOMLIFY_API_BASE}/emails/${emailId}`;
     
     const boomlifyResponse = await fetch(boomlifyUrl, {
       method: 'GET',
       headers: {
+        'X-API-Key': BOOMLIFY_API_KEY,
         'Content-Type': 'application/json',
       },
       // Boomlify API timeout after 10 seconds
@@ -106,8 +111,10 @@ export async function GET(
     }
 
     if (!boomlifyResponse.ok) {
+      const errorText = await boomlifyResponse.text();
       console.error(
-        `Boomlify API error: ${boomlifyResponse.status} ${boomlifyResponse.statusText}`
+        `Boomlify API error: ${boomlifyResponse.status} ${boomlifyResponse.statusText}`,
+        errorText
       );
       
       return NextResponse.json(
@@ -122,9 +129,13 @@ export async function GET(
       );
     }
 
-    const boomlifyData: BoomlifyMessagesResponse = await boomlifyResponse.json();
+    const boomlifyData: BoomlifyEmailResponse = await boomlifyResponse.json();
+    
+    // Log actual response for debugging
+    console.log('Boomlify get email response:', JSON.stringify(boomlifyData, null, 2));
 
-    if (!boomlifyData.success) {
+    // Check if response is successful
+    if (!boomlifyData.success || !boomlifyData.email) {
       console.error('Boomlify API returned unsuccessful response:', boomlifyData);
       
       return NextResponse.json(
@@ -140,12 +151,16 @@ export async function GET(
     }
 
     // Extract and sanitize message list
-    const messages = boomlifyData.data?.messages || [];
+    // Note: Boomlify free tier may not return messages array, only message_count
+    const messages = boomlifyData.email.messages || [];
+    
+    // Log message count for debugging
+    console.log(`[DEBUG] Email ${emailId} has ${boomlifyData.email.message_count} messages, returned ${messages.length} in response`);
 
-    // Sort messages by receivedAt descending (newest first)
+    // Sort messages by received_at descending (newest first)
     const sortedMessages = messages.sort((a, b) => {
-      const dateA = new Date(a.receivedAt).getTime();
-      const dateB = new Date(b.receivedAt).getTime();
+      const dateA = new Date(a.received_at).getTime();
+      const dateB = new Date(b.received_at).getTime();
       return dateB - dateA; // Descending order
     });
 
@@ -158,8 +173,8 @@ export async function GET(
             id: msg.id,
             from: msg.from,
             subject: msg.subject,
-            receivedAt: msg.receivedAt,
-            preview: msg.preview,
+            receivedAt: msg.received_at,
+            preview: msg.body.substring(0, 100), // First 100 chars as preview
           })),
         },
       },

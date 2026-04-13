@@ -15,9 +15,11 @@ const BOOMLIFY_API_KEY = process.env.BOOMLIFY_API_KEY;
 
 interface BoomlifyCreateResponse {
   success: boolean;
-  data?: {
+  email?: {
     id: string;
-    email: string;
+    address: string;
+    created_at: string;
+    expires_at: string;
   };
   error?: {
     message: string;
@@ -54,7 +56,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { duration } = body;
+    const { duration, domain } = body;
 
     // Validate duration parameter
     if (!duration || !isValidDuration(duration)) {
@@ -86,11 +88,25 @@ export async function POST(request: NextRequest) {
     }
 
     // Call Boomlify API to create temporary email
-    const boomlifyUrl = `${BOOMLIFY_API_BASE}/emails/create?api_key=${BOOMLIFY_API_KEY}`;
+    // Boomlify uses X-API-Key header for authentication
+    // Map our duration format to Boomlify time format
+    const timeMap: Record<Duration, string> = {
+      '10min': '10min',
+      '1hr': '1hour',  // Boomlify uses '1hour' not '1hr'
+      '1day': '1day',
+    };
+    
+    // IMPORTANT: time parameter must be in query string, not body
+    // domain parameter is optional
+    let boomlifyUrl = `${BOOMLIFY_API_BASE}/emails/create?time=${timeMap[duration as Duration]}`;
+    if (domain) {
+      boomlifyUrl += `&domain=${encodeURIComponent(domain)}`;
+    }
     
     const boomlifyResponse = await fetch(boomlifyUrl, {
       method: 'POST',
       headers: {
+        'X-API-Key': BOOMLIFY_API_KEY,
         'Content-Type': 'application/json',
       },
       // Boomlify API timeout after 10 seconds
@@ -98,8 +114,10 @@ export async function POST(request: NextRequest) {
     });
 
     if (!boomlifyResponse.ok) {
+      const errorText = await boomlifyResponse.text();
       console.error(
-        `Boomlify API error: ${boomlifyResponse.status} ${boomlifyResponse.statusText}`
+        `Boomlify API error: ${boomlifyResponse.status} ${boomlifyResponse.statusText}`,
+        errorText
       );
       
       return NextResponse.json(
@@ -114,34 +132,39 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const boomlifyData: BoomlifyCreateResponse = await boomlifyResponse.json();
+    const boomlifyData = await boomlifyResponse.json();
+    
+    // Log actual response for debugging
+    console.log('Boomlify create response:', JSON.stringify(boomlifyData, null, 2));
 
-    if (!boomlifyData.success || !boomlifyData.data) {
-      console.error('Boomlify API returned unsuccessful response:', boomlifyData);
+    // Boomlify response format: { success, email: { id, address, created_at, expires_at, ... } }
+    if (!boomlifyData.success || !boomlifyData.email) {
+      console.error('Boomlify API returned response without email field:', boomlifyData);
       
       return NextResponse.json(
         {
           success: false,
           error: {
             code: ERROR_CODES.API_ERROR,
-            message: boomlifyData.error?.message || 'Failed to create temporary email',
+            message: 'Failed to create temporary email',
           },
         },
         { status: 500 }
       );
     }
 
-    // Calculate expiration timestamp based on duration
-    const createdAt = new Date();
-    const expiresAt = calculateExpirationTime(createdAt, duration as Duration);
+    // Extract email data from nested structure
+    const emailData = boomlifyData.email;
+    const createdAt = new Date(emailData.created_at);
+    const expiresAt = new Date(emailData.expires_at);
 
     // Return sanitized response with email details
     return NextResponse.json(
       {
         success: true,
         data: {
-          id: boomlifyData.data.id,
-          email: boomlifyData.data.email,
+          id: emailData.id,
+          email: emailData.address,
           createdAt: createdAt.toISOString(),
           expiresAt: expiresAt.toISOString(),
           duration: duration,

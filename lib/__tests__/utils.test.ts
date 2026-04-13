@@ -15,25 +15,24 @@ describe('Validation and Utility Functions', () => {
       expect(isValidEmailId('email123')).toBe(true);
     });
 
+    it('should return true for UUIDs with dashes', () => {
+      expect(isValidEmailId('14dfda6b-8aea-4568-a0ba-3def86b8b8ef')).toBe(true);
+      expect(isValidEmailId('abc-123-def')).toBe(true);
+    });
+
     it('should return false for empty string', () => {
       expect(isValidEmailId('')).toBe(false);
     });
 
-    it('should return false for strings with special characters', () => {
+    it('should return false for strings with special characters (except dash)', () => {
       expect(isValidEmailId('test@123')).toBe(false);
-      expect(isValidEmailId('test-123')).toBe(false);
       expect(isValidEmailId('test_123')).toBe(false);
+      expect(isValidEmailId('test.123')).toBe(false);
     });
 
     it('should return false for strings over 100 characters', () => {
       const longString = 'a'.repeat(101);
       expect(isValidEmailId(longString)).toBe(false);
-    });
-
-    it('should return false for strings with special characters', () => {
-      expect(isValidEmailId('test@123')).toBe(false);
-      expect(isValidEmailId('test-123')).toBe(false);
-      expect(isValidEmailId('test_123')).toBe(false);
     });
 
     it('should return false for non-string inputs (handled by type system)', () => {

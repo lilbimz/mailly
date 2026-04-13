@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { TemporaryEmail, Duration, STORAGE_KEYS } from '@/types';
-import { useLocalStorage } from './useLocalStorage';
+import { TemporaryEmail, Duration } from '@/types';
 import { emailApiClient } from './emailApiClient';
 import { cleanupExpiredEmails, saveEmail, removeEmail, loadEmails } from './localStorage';
 import { isEmailExpired } from './utils';
@@ -13,7 +12,7 @@ import { isEmailExpired } from './utils';
 export interface UseEmailManagerReturn {
   emails: TemporaryEmail[];
   activeEmail: TemporaryEmail | null;
-  createEmail: (duration: Duration) => Promise<TemporaryEmail>;
+  createEmail: (duration: Duration, domain?: string) => Promise<TemporaryEmail>;
   deleteEmail: (emailId: string) => Promise<void>;
   selectEmail: (emailId: string) => void;
   refreshEmails: () => void;
@@ -40,11 +39,9 @@ export interface UseEmailManagerReturn {
  * await deleteEmail(emails[0].id);
  */
 export function useEmailManager(): UseEmailManagerReturn {
-  // Use localStorage hook for persistent email storage
-  const [emails, setEmails] = useLocalStorage<TemporaryEmail[]>(
-    STORAGE_KEYS.EMAILS,
-    []
-  );
+  // Use regular useState and load from localStorage manually
+  // This ensures proper Date deserialization via loadEmails()
+  const [emails, setEmails] = useState<TemporaryEmail[]>([]);
 
   // Track active/selected email ID
   const [activeEmailId, setActiveEmailId] = useState<string | null>(null);
@@ -61,13 +58,13 @@ export function useEmailManager(): UseEmailManagerReturn {
    * Calls API, saves to localStorage, and sets as active
    */
   const createEmail = useCallback(
-    async (duration: Duration): Promise<TemporaryEmail> => {
+    async (duration: Duration, domain?: string): Promise<TemporaryEmail> => {
       setIsLoading(true);
       setError(null);
 
       try {
         // Call API to create email
-        const newEmail = await emailApiClient.createEmail(duration);
+        const newEmail = await emailApiClient.createEmail(duration, domain);
 
         // Add to emails array
         setEmails((prev) => [...prev, newEmail]);

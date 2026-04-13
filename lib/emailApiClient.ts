@@ -25,31 +25,34 @@ export class EmailApiClient {
   /**
    * Create a temporary email address
    * @param duration - How long the email should remain active
+   * @param domain - Optional domain to use for the email
    * @returns The created temporary email
    * @throws ApiError if creation fails
    */
-  async createEmail(duration: Duration): Promise<TemporaryEmail> {
+  async createEmail(duration: Duration, domain?: string): Promise<TemporaryEmail> {
     const response = await this.fetchWithTimeout(
       `${this.baseUrl}/email/create`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ duration }),
+        body: JSON.stringify({ duration, domain }),
       }
     );
 
     const data = await this.parseResponse<{
       id: string;
       email: string;
+      createdAt: string;
       expiresAt: string;
+      duration: Duration;
     }>(response);
 
     return {
       id: data.id,
       email: data.email,
-      createdAt: new Date(),
+      createdAt: new Date(data.createdAt),
       expiresAt: new Date(data.expiresAt),
-      duration,
+      duration: data.duration,
       unreadCount: 0,
     };
   }
@@ -75,6 +78,11 @@ export class EmailApiClient {
         preview: string;
       }>;
     }>(response);
+
+    console.log(`[DEBUG] getMessages for ${emailId}:`, {
+      messageCount: data.messages.length,
+      messages: data.messages,
+    });
 
     return data.messages.map((msg) => ({
       id: msg.id,
@@ -108,7 +116,6 @@ export class EmailApiClient {
       subject: string;
       receivedAt: string;
       body: string;
-      isHtml: boolean;
     }>(response);
 
     return {
@@ -119,7 +126,7 @@ export class EmailApiClient {
       receivedAt: new Date(data.receivedAt),
       preview: data.body.substring(0, 100),
       body: data.body,
-      isHtml: data.isHtml,
+      isHtml: true, // Boomlify returns HTML by default
       isRead: false,
     };
   }
@@ -130,17 +137,12 @@ export class EmailApiClient {
    * @throws ApiError if deletion fails
    */
   async deleteEmail(emailId: string): Promise<void> {
-    await this.fetchWithTimeout(
-      `${this.baseUrl}/email/${emailId}`,
-      { method: 'DELETE' }
-    );
-
-    // Parse response to ensure success
     const response = await this.fetchWithTimeout(
       `${this.baseUrl}/email/${emailId}`,
       { method: 'DELETE' }
     );
 
+    // Parse response to ensure success
     await this.parseResponse<{ message: string }>(response);
   }
 
@@ -177,10 +179,20 @@ export class EmailApiClient {
         );
       }
 
+      // Handle TypeError (network errors)
       if (error instanceof TypeError) {
         throw new ApiError(
           ERROR_CODES.NETWORK_ERROR,
           'Network error. Please check your connection and try again.',
+          undefined
+        );
+      }
+
+      // Handle generic Error (unknown errors)
+      if (error instanceof Error) {
+        throw new ApiError(
+          ERROR_CODES.UNKNOWN_ERROR,
+          error.message || 'An unexpected error occurred',
           undefined
         );
       }

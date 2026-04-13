@@ -4,7 +4,7 @@ import { Duration, DURATION_MS } from '@/types';
 
 /**
  * Validates email ID format
- * Boomlify email IDs are alphanumeric strings
+ * Boomlify email IDs are UUIDs with dashes
  * 
  * @param id - Email ID to validate
  * @returns true if valid, false otherwise
@@ -14,8 +14,8 @@ export function isValidEmailId(id: string): boolean {
     return false;
   }
   
-  // Must be alphanumeric, non-empty, and max 100 characters
-  return /^[a-zA-Z0-9]+$/.test(id) && id.length > 0 && id.length <= 100;
+  // Must be alphanumeric with dashes (UUID format), non-empty, and max 100 characters
+  return /^[a-zA-Z0-9-]+$/.test(id) && id.length > 0 && id.length <= 100;
 }
 
 /**

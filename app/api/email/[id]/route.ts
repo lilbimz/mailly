@@ -14,11 +14,7 @@ const BOOMLIFY_API_BASE = 'https://v1.boomlify.com/api/v1';
 const BOOMLIFY_API_KEY = process.env.BOOMLIFY_API_KEY;
 
 interface BoomlifyDeleteResponse {
-  success: boolean;
   message?: string;
-  error?: {
-    message: string;
-  };
 }
 
 export async function DELETE(
@@ -69,11 +65,13 @@ export async function DELETE(
     }
 
     // Call Boomlify API to delete email
-    const boomlifyUrl = `${BOOMLIFY_API_BASE}/emails/${id}?api_key=${BOOMLIFY_API_KEY}`;
+    // Boomlify uses X-API-Key header for authentication
+    const boomlifyUrl = `${BOOMLIFY_API_BASE}/emails/${id}`;
     
     const boomlifyResponse = await fetch(boomlifyUrl, {
       method: 'DELETE',
       headers: {
+        'X-API-Key': BOOMLIFY_API_KEY,
         'Content-Type': 'application/json',
       },
       // Boomlify API timeout after 10 seconds
@@ -113,20 +111,8 @@ export async function DELETE(
 
     const boomlifyData: BoomlifyDeleteResponse = await boomlifyResponse.json();
 
-    if (!boomlifyData.success) {
-      console.error('Boomlify API returned unsuccessful response:', boomlifyData);
-      
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: ERROR_CODES.API_ERROR,
-            message: boomlifyData.error?.message || 'Failed to delete email',
-          },
-        },
-        { status: 500 }
-      );
-    }
+    // Log actual response for debugging
+    console.log('Boomlify delete response:', JSON.stringify(boomlifyData, null, 2));
 
     // Return success confirmation
     return NextResponse.json(

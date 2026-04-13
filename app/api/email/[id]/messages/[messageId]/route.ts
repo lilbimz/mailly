@@ -1,6 +1,9 @@
 /**
  * GET /api/email/[id]/messages/[messageId]
  * Fetches full content of a specific message
+ * 
+ * Note: Boomlify API doesn't have a dedicated endpoint for individual messages.
+ * We fetch all messages for the email and return the matching one.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -13,23 +16,24 @@ import { ERROR_CODES } from '@/types';
 const BOOMLIFY_API_BASE = 'https://v1.boomlify.com/api/v1';
 const BOOMLIFY_API_KEY = process.env.BOOMLIFY_API_KEY;
 
-interface BoomlifyMessageDetail {
+interface BoomlifyMessage {
   id: string;
   from: string;
   subject: string;
-  receivedAt: string;
   body: string;
-  isHtml: boolean;
+  received_at: string;
 }
 
-interface BoomlifyMessageResponse {
+interface BoomlifyEmailResponse {
   success: boolean;
-  data?: {
-    message: BoomlifyMessageDetail;
+  email?: {
+    id: string;
+    address: string;
+    message_count: number;
+    messages?: BoomlifyMessage[];
   };
   error?: {
     message: string;
-    code?: string;
   };
 }
 
@@ -95,52 +99,13 @@ export async function GET(
       );
     }
 
-    // Call Boomlify API to fetch full message content
-    const boomlifyUrl = `${BOOMLIFY_API_BASE}/emails/${emailId}/messages/${messageId}?api_key=${BOOMLIFY_API_KEY}`;
+    const boomlifyData: BoomlifyEmailResponse = await boomlifyResponse.json();
     
-    const boomlifyResponse = await fetch(boomlifyUrl, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      // Boomlify API timeout after 10 seconds
-      signal: AbortSignal.timeout(10000),
-    });
+    // Log actual response for debugging
+    console.log('Boomlify get email response:', JSON.stringify(boomlifyData, null, 2));
 
-    // Handle 404 - message not found
-    if (boomlifyResponse.status === 404) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: ERROR_CODES.MESSAGE_NOT_FOUND,
-            message: 'Message not found',
-          },
-        },
-        { status: 404 }
-      );
-    }
-
-    if (!boomlifyResponse.ok) {
-      console.error(
-        `Boomlify API error: ${boomlifyResponse.status} ${boomlifyResponse.statusText}`
-      );
-      
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: ERROR_CODES.API_ERROR,
-            message: 'Failed to fetch message. Please try again.',
-          },
-        },
-        { status: 500 }
-      );
-    }
-
-    const boomlifyData: BoomlifyMessageResponse = await boomlifyResponse.json();
-
-    if (!boomlifyData.success) {
+    // Check if response is successful
+    if (!boomlifyData.success || !boomlifyData.email) {
       console.error('Boomlify API returned unsuccessful response:', boomlifyData);
       
       return NextResponse.json(
@@ -155,11 +120,12 @@ export async function GET(
       );
     }
 
-    // Extract message data
-    const message = boomlifyData.data?.message;
+    // Find the specific message
+    // Note: Boomlify free tier may not return messages array, only message_count
+    const messages = boomlifyData.email.messages || [];
+    const message = messages.find((msg) => msg.id === messageId);
 
     if (!message) {
-      console.error('Boomlify API returned no message data');
       return NextResponse.json(
         {
           success: false,
@@ -181,9 +147,8 @@ export async function GET(
           id: message.id,
           from: message.from,
           subject: message.subject,
-          receivedAt: message.receivedAt,
+          receivedAt: message.received_at,
           body: message.body,
-          isHtml: message.isHtml,
         },
       },
       { status: 200 }
