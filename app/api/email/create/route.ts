@@ -114,7 +114,12 @@ export async function POST(request: NextRequest) {
     });
 
     if (!boomlifyResponse.ok) {
-      const errorText = await boomlifyResponse.text();
+      let errorText = '';
+      try {
+        errorText = await boomlifyResponse.text();
+      } catch (e) {
+        // Ignore error if text() is not available
+      }
       console.error(
         `Boomlify API error: ${boomlifyResponse.status} ${boomlifyResponse.statusText}`,
         errorText

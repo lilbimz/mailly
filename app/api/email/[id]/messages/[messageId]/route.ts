@@ -20,17 +20,18 @@ interface BoomlifyMessage {
   id: string;
   from: string;
   subject: string;
-  body: string;
-  received_at: string;
+  body?: string;
+  received_at?: string;
+  receivedAt?: string;
+  preview?: string;
+  isHtml?: boolean;
 }
 
 interface BoomlifyEmailResponse {
   success: boolean;
-  email?: {
-    id: string;
-    address: string;
-    message_count: number;
+  data?: {
     messages?: BoomlifyMessage[];
+    message?: BoomlifyMessage;
   };
   error?: {
     message: string;
@@ -99,13 +100,41 @@ export async function GET(
       );
     }
 
-    const boomlifyData: BoomlifyEmailResponse = await boomlifyResponse.json();
+    // Fetch email with messages from Boomlify API
+    const boomlifyResponse = await fetch(
+      `${BOOMLIFY_API_BASE}/emails/${emailId}/messages/${messageId}`,
+      {
+        method: 'GET',
+        headers: {
+          'X-API-Key': BOOMLIFY_API_KEY,
+          'Content-Type': 'application/json',
+        },
+        signal: AbortSignal.timeout(10000), // 10 second timeout
+      }
+    );
+
+    let boomlifyData: BoomlifyEmailResponse;
+    try {
+      boomlifyData = await boomlifyResponse.json();
+    } catch (e) {
+      // If json() fails, treat as API error
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: ERROR_CODES.API_ERROR,
+            message: 'Failed to fetch message. Please try again.',
+          },
+        },
+        { status: 500 }
+      );
+    }
     
     // Log actual response for debugging
     console.log('Boomlify get email response:', JSON.stringify(boomlifyData, null, 2));
 
     // Check if response is successful
-    if (!boomlifyData.success || !boomlifyData.email) {
+    if (!boomlifyData.success || !boomlifyData.data) {
       console.error('Boomlify API returned unsuccessful response:', boomlifyData);
       
       return NextResponse.json(
@@ -120,10 +149,16 @@ export async function GET(
       );
     }
 
-    // Find the specific message
-    // Note: Boomlify free tier may not return messages array, only message_count
-    const messages = boomlifyData.email.messages || [];
-    const message = messages.find((msg) => msg.id === messageId);
+    // Get the message - could be a single message or from an array
+    let message: BoomlifyMessage | undefined;
+    
+    if (boomlifyData.data.message) {
+      // Single message response
+      message = boomlifyData.data.message;
+    } else if (boomlifyData.data.messages) {
+      // Array of messages - find the specific one
+      message = boomlifyData.data.messages.find((msg) => msg.id === messageId);
+    }
 
     if (!message) {
       return NextResponse.json(
@@ -147,8 +182,9 @@ export async function GET(
           id: message.id,
           from: message.from,
           subject: message.subject,
-          receivedAt: message.received_at,
-          body: message.body,
+          receivedAt: message.received_at || message.receivedAt,
+          body: message.body || '',
+          isHtml: message.isHtml ?? false,
         },
       },
       { status: 200 }

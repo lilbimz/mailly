@@ -114,6 +114,22 @@ export async function DELETE(
     // Log actual response for debugging
     console.log('Boomlify delete response:', JSON.stringify(boomlifyData, null, 2));
 
+    // Check if response indicates success (some APIs return 200 with success: false)
+    if (boomlifyData && typeof boomlifyData === 'object' && 'success' in boomlifyData && !boomlifyData.success) {
+      console.error('Boomlify API returned unsuccessful response:', boomlifyData);
+      
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: ERROR_CODES.API_ERROR,
+            message: boomlifyData.error?.message || 'Failed to delete email',
+          },
+        },
+        { status: 500 }
+      );
+    }
+
     // Return success confirmation
     return NextResponse.json(
       {

@@ -17,17 +17,16 @@ interface BoomlifyMessage {
   id: string;
   from: string;
   subject: string;
-  body: string;
-  received_at: string;
+  body?: string;
+  received_at?: string;
+  receivedAt?: string;
+  preview?: string;
 }
 
 interface BoomlifyEmailResponse {
   success: boolean;
-  email?: {
-    id: string;
-    address: string;
-    message_count: number;
-    messages?: BoomlifyMessage[];
+  data?: {
+    messages: BoomlifyMessage[];
   };
   error?: {
     message: string;
@@ -111,7 +110,12 @@ export async function GET(
     }
 
     if (!boomlifyResponse.ok) {
-      const errorText = await boomlifyResponse.text();
+      let errorText = '';
+      try {
+        errorText = await boomlifyResponse.text();
+      } catch (e) {
+        // Ignore error if text() is not available
+      }
       console.error(
         `Boomlify API error: ${boomlifyResponse.status} ${boomlifyResponse.statusText}`,
         errorText
@@ -135,7 +139,7 @@ export async function GET(
     console.log('Boomlify get email response:', JSON.stringify(boomlifyData, null, 2));
 
     // Check if response is successful
-    if (!boomlifyData.success || !boomlifyData.email) {
+    if (!boomlifyData.success || !boomlifyData.data) {
       console.error('Boomlify API returned unsuccessful response:', boomlifyData);
       
       return NextResponse.json(
@@ -151,16 +155,15 @@ export async function GET(
     }
 
     // Extract and sanitize message list
-    // Note: Boomlify free tier may not return messages array, only message_count
-    const messages = boomlifyData.email.messages || [];
+    const messages = boomlifyData.data.messages || [];
     
     // Log message count for debugging
-    console.log(`[DEBUG] Email ${emailId} has ${boomlifyData.email.message_count} messages, returned ${messages.length} in response`);
+    console.log(`[DEBUG] Email ${emailId} has ${messages.length} messages in response`);
 
     // Sort messages by received_at descending (newest first)
     const sortedMessages = messages.sort((a, b) => {
-      const dateA = new Date(a.received_at).getTime();
-      const dateB = new Date(b.received_at).getTime();
+      const dateA = new Date(a.received_at || a.receivedAt || '').getTime();
+      const dateB = new Date(b.received_at || b.receivedAt || '').getTime();
       return dateB - dateA; // Descending order
     });
 
@@ -173,8 +176,8 @@ export async function GET(
             id: msg.id,
             from: msg.from,
             subject: msg.subject,
-            receivedAt: msg.received_at,
-            preview: msg.body.substring(0, 100), // First 100 chars as preview
+            receivedAt: msg.received_at || msg.receivedAt,
+            preview: msg.preview || (msg.body ? msg.body.substring(0, 100) : ''),
           })),
         },
       },
