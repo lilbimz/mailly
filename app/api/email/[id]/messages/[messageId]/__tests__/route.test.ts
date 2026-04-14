@@ -205,11 +205,14 @@ describe('GET /api/email/[id]/messages/[messageId]', () => {
   });
 
   it('should return 404 for non-existent message', async () => {
-    // Mock Boomlify API 404 response
+    // Mock Boomlify API response with no message data
     (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: false,
-      status: 404,
-      statusText: 'Not Found',
+      ok: true,
+      status: 200,
+      json: async () => ({
+        success: true,
+        data: {},
+      }),
     });
 
     const request = new NextRequest(
@@ -554,11 +557,12 @@ describe('GET /api/email/[id]/messages/[messageId]', () => {
     });
 
     expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining('https://v1.boomlify.com/api/v1/emails/test123/messages/msg123'),
+      'https://v1.boomlify.com/api/v1/emails/test123/messages/msg123',
       expect.objectContaining({
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          'X-API-Key': 'test_api_key',
         },
       })
     );

@@ -369,11 +369,12 @@ describe('DELETE /api/email/[id]', () => {
 
     // Verify fetch was called with correct URL and parameters
     expect(global.fetch).toHaveBeenCalledWith(
-      'https://v1.boomlify.com/api/v1/emails/test123?api_key=test_api_key',
+      'https://v1.boomlify.com/api/v1/emails/test123',
       expect.objectContaining({
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
+          'X-API-Key': 'test_api_key',
         },
       })
     );
