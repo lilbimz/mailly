@@ -206,3 +206,80 @@ export function cleanupExpiredEmails(): number {
     return 0;
   }
 }
+
+/**
+ * Storage key for message read status
+ */
+const MESSAGE_READ_STATUS_KEY = 'tempmail_message_read_status';
+
+/**
+ * Get read status for all messages
+ * Returns a map of messageId -> isRead
+ * 
+ * @returns Map of message IDs to read status
+ */
+function getMessageReadStatus(): Record<string, boolean> {
+  try {
+    const stored = localStorage.getItem(MESSAGE_READ_STATUS_KEY);
+    if (!stored) {
+      return {};
+    }
+    const parsed = JSON.parse(stored);
+    return typeof parsed === 'object' && parsed !== null ? parsed : {};
+  } catch (error) {
+    console.warn('Failed to load message read status:', error);
+    return {};
+  }
+}
+
+/**
+ * Save read status for all messages
+ * 
+ * @param readStatus - Map of message IDs to read status
+ */
+function saveMessageReadStatus(readStatus: Record<string, boolean>): void {
+  try {
+    localStorage.setItem(MESSAGE_READ_STATUS_KEY, JSON.stringify(readStatus));
+  } catch (error) {
+    console.error('Failed to save message read status:', error);
+  }
+}
+
+/**
+ * Mark a message as read in localStorage
+ * 
+ * @param messageId - ID of message to mark as read
+ */
+export function markMessageAsRead(messageId: string): void {
+  const readStatus = getMessageReadStatus();
+  readStatus[messageId] = true;
+  saveMessageReadStatus(readStatus);
+}
+
+/**
+ * Check if a message is read
+ * 
+ * @param messageId - ID of message to check
+ * @returns true if message is read, false otherwise
+ */
+export function isMessageRead(messageId: string): boolean {
+  const readStatus = getMessageReadStatus();
+  return readStatus[messageId] === true;
+}
+
+/**
+ * Get read status for multiple messages
+ * 
+ * @param messageIds - Array of message IDs
+ * @returns Map of message IDs to read status
+ */
+export function getMessagesReadStatus(messageIds: string[]): Record<string, boolean> {
+  const allReadStatus = getMessageReadStatus();
+  const result: Record<string, boolean> = {};
+  
+  for (const id of messageIds) {
+    result[id] = allReadStatus[id] === true;
+  }
+  
+  return result;
+}

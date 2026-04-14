@@ -127,7 +127,7 @@ export default function InboxViewer({
                   </p>
                 </div>
                 <div className="flex-shrink-0">
-                  <p className="text-xs text-gray-500 dark:text-gray-500">
+                  <p className="text-xs text-gray-600 dark:text-gray-400">
                     {formatTimestamp(message.receivedAt)}
                   </p>
                 </div>

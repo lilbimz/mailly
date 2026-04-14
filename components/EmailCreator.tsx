@@ -94,7 +94,7 @@ export default function EmailCreator({ onCreateEmail, disabled = false }: EmailC
             </option>
           ))}
         </select>
-        <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+        <p className="mt-2 text-xs text-gray-600 dark:text-gray-400">
           💡 Tip: Use nondon.store for best email delivery reliability
         </p>
       </div>

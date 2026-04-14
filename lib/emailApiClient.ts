@@ -42,17 +42,17 @@ export class EmailApiClient {
     const data = await this.parseResponse<{
       id: string;
       email: string;
-      createdAt: string;
+      createdAt?: string;
       expiresAt: string;
-      duration: Duration;
+      duration?: Duration;
     }>(response);
 
     return {
       id: data.id,
       email: data.email,
-      createdAt: new Date(data.createdAt),
+      createdAt: data.createdAt ? new Date(data.createdAt) : new Date(),
       expiresAt: new Date(data.expiresAt),
-      duration: data.duration,
+      duration: data.duration || duration,
       unreadCount: 0,
     };
   }
@@ -116,6 +116,8 @@ export class EmailApiClient {
       subject: string;
       receivedAt: string;
       body: string;
+      isHtml?: boolean;
+      preview?: string;
     }>(response);
 
     return {
@@ -124,9 +126,9 @@ export class EmailApiClient {
       from: data.from,
       subject: data.subject,
       receivedAt: new Date(data.receivedAt),
-      preview: data.body.substring(0, 100),
+      preview: data.preview || data.body.substring(0, 100),
       body: data.body,
-      isHtml: true, // Boomlify returns HTML by default
+      isHtml: data.isHtml ?? false,
       isRead: false,
     };
   }
@@ -188,11 +190,11 @@ export class EmailApiClient {
         );
       }
 
-      // Handle generic Error (unknown errors)
+      // Handle generic Error (network errors from fetch failures)
       if (error instanceof Error) {
         throw new ApiError(
-          ERROR_CODES.UNKNOWN_ERROR,
-          error.message || 'An unexpected error occurred',
+          ERROR_CODES.NETWORK_ERROR,
+          `Network error. ${error.message}`,
           undefined
         );
       }

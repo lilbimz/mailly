@@ -52,10 +52,10 @@ export function CopyButton({ text, label = 'Copy' }: CopyButtonProps) {
         onClick={handleCopy}
         className={`px-3 py-2 rounded-md font-medium transition-colors ${
           copied
-            ? 'bg-green-500 text-white'
+            ? 'bg-green-500 dark:bg-green-600 text-white'
             : error
-              ? 'bg-red-500 text-white'
-              : 'bg-blue-500 text-white hover:bg-blue-600'
+              ? 'bg-red-500 dark:bg-red-600 text-white'
+              : 'bg-blue-500 dark:bg-blue-600 text-white hover:bg-blue-600 dark:hover:bg-blue-700'
         }`}
         disabled={copied || error !== null}
       >
