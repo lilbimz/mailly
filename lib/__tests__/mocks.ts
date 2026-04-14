@@ -46,7 +46,10 @@ export const mockClipboard = () => {
 }
 
 export const mockNotification = () => {
-  return jest.fn()
+  return jest.fn().mockImplementation(() => ({
+    onclick: null,
+    close: jest.fn(),
+  }))
 }
 
 export const mockIntersectionObserver = () => {

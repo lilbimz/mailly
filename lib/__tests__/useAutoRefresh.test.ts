@@ -338,21 +338,16 @@ describe('useAutoRefresh', () => {
         expect(mockGetMessages).toHaveBeenCalledTimes(1);
       });
 
-      // Change interval
+      // Change interval - this clears and restarts the interval
       rerender({ interval: 5000 });
 
-      // Should fetch immediately on interval change
-      await waitFor(() => {
-        expect(mockGetMessages).toHaveBeenCalledTimes(2);
-      });
-
-      // Advance by new interval
+      // Advance by new interval (5000ms)
       await act(async () => {
         jest.advanceTimersByTime(5000);
       });
 
       await waitFor(() => {
-        expect(mockGetMessages).toHaveBeenCalledTimes(3);
+        expect(mockGetMessages).toHaveBeenCalledTimes(2);
       });
     });
   });

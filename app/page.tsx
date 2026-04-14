@@ -1,14 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useEmailManager } from '@/lib/useEmailManager';
 import { useAutoRefresh } from '@/lib/useAutoRefresh';
+import { markMessageAsRead } from '@/lib/localStorage';
 import EmailCreator from '@/components/EmailCreator';
+import EmailList from '@/components/EmailList';
 import InboxViewer from '@/components/InboxViewer';
 import { MessageViewer } from '@/components/MessageViewer';
-import CountdownTimer from '@/components/CountdownTimer';
-import { CopyButton } from '@/components/CopyButton';
-import { TemporaryEmail, Message, Duration } from '@/types';
+import { Message, Duration } from '@/types';
 
 export default function Home() {
   const {
@@ -17,16 +17,40 @@ export default function Home() {
     createEmail,
     deleteEmail,
     selectEmail,
-    refreshEmails,
+    updateUnreadCount,
   } = useEmailManager();
+
+  // Store messages per email ID to maintain separate state
+  const [messagesByEmail, setMessagesByEmail] = useState<Record<string, Message[]>>({});
+  
+  const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
+
+  // Callback for when notification is clicked - show the message
+  const handleNotificationClick = (message: Message) => {
+    setSelectedMessage(message);
+  };
 
   const { messages, isRefreshing } = useAutoRefresh(
     activeEmail?.id || null,
-    15000
+    15000,
+    handleNotificationClick
   );
 
-  const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [isCreatingEmail, setIsCreatingEmail] = useState(false);
+
+  // Store messages for the active email whenever they change
+  useEffect(() => {
+    if (activeEmail && messages.length >= 0) {
+      setMessagesByEmail(prev => ({
+        ...prev,
+        [activeEmail.id]: messages
+      }));
+      updateUnreadCount(activeEmail.id, messages);
+    }
+  }, [activeEmail, messages, updateUnreadCount]);
+
+  // Get messages for the currently active email
+  const currentMessages = activeEmail ? (messagesByEmail[activeEmail.id] || []) : [];
 
   const handleCreateEmail = async (duration: Duration, domain?: string) => {
     setIsCreatingEmail(true);
@@ -47,29 +71,47 @@ export default function Home() {
   };
 
   const handleEmailDelete = async (emailId: string) => {
-    if (confirm('Are you sure you want to delete this email?')) {
-      try {
-        await deleteEmail(emailId);
-      } catch (error) {
-        console.error('Failed to delete email:', error);
-      }
+    try {
+      await deleteEmail(emailId);
+      // Clear messages for deleted email
+      setMessagesByEmail(prev => {
+        const updated = { ...prev };
+        delete updated[emailId];
+        return updated;
+      });
+    } catch (error) {
+      console.error('Failed to delete email:', error);
+      throw error; // Re-throw so EmailList can handle it
     }
   };
 
   const handleMessageSelect = (messageId: string) => {
-    const message = messages.find((m) => m.id === messageId);
+    const message = currentMessages.find((m) => m.id === messageId);
     if (message) {
-      setSelectedMessage(message);
+      // Mark message as read in localStorage
+      markMessageAsRead(messageId);
+      
+      // Update the message object to reflect read status
+      const updatedMessage = { ...message, isRead: true };
+      setSelectedMessage(updatedMessage);
+      
+      // Trigger unread count update
+      if (activeEmail) {
+        const updatedMessages = currentMessages.map(m => 
+          m.id === messageId ? updatedMessage : m
+        );
+        // Update the messages in state
+        setMessagesByEmail(prev => ({
+          ...prev,
+          [activeEmail.id]: updatedMessages
+        }));
+        updateUnreadCount(activeEmail.id, updatedMessages);
+      }
     }
   };
 
   const handleMessageClose = () => {
     setSelectedMessage(null);
-  };
-
-  const handleEmailExpire = () => {
-    // Refresh emails to remove expired ones
-    refreshEmails();
   };
 
   return (
@@ -92,70 +134,22 @@ export default function Home() {
           <EmailCreator onCreateEmail={handleCreateEmail} disabled={isCreatingEmail} />
         </div>
 
-        {/* Active Emails List (Simplified for Sprint 1) */}
-        {emails.length > 0 && (
-          <div className="mb-8">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-                Active Emails ({emails.length})
-              </h2>
-              <div className="space-y-3">
-                {emails.map((email) => (
-                  <div
-                    key={email.id}
-                    className={`
-                      p-4 rounded-lg border-2 transition-all cursor-pointer
-                      ${
-                        activeEmail?.id === email.id
-                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                          : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-                      }
-                    `}
-                    onClick={() => handleEmailSelect(email.id)}
-                  >
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-2">
-                          <p className="font-mono text-sm text-gray-900 dark:text-white truncate">
-                            {email.email}
-                          </p>
-                          <CopyButton text={email.email} label="Copy" />
-                        </div>
-                        <div className="flex items-center gap-4 text-sm">
-                          <CountdownTimer
-                            expiresAt={email.expiresAt}
-                            onExpire={handleEmailExpire}
-                          />
-                          {email.unreadCount > 0 && (
-                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
-                              {email.unreadCount} unread
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleEmailDelete(email.id);
-                        }}
-                        className="flex-shrink-0 px-3 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Email List Section */}
+        <div className="mb-8">
+          <EmailList
+            emails={emails}
+            activeEmailId={activeEmail?.id || null}
+            onEmailSelect={handleEmailSelect}
+            onEmailDelete={handleEmailDelete}
+          />
+        </div>
 
         {/* Inbox Viewer Section */}
         {activeEmail && (
           <div className="mb-8">
             <InboxViewer
               email={activeEmail}
-              messages={messages}
+              messages={currentMessages}
               onMessageSelect={handleMessageSelect}
               isRefreshing={isRefreshing}
             />

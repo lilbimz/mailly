@@ -1,6 +1,14 @@
 // Unit Tests for localStorage Helper Functions
 
-import { saveEmail, removeEmail, loadEmails, cleanupExpiredEmails } from '../localStorage';
+import { 
+  saveEmail, 
+  removeEmail, 
+  loadEmails, 
+  cleanupExpiredEmails,
+  markMessageAsRead,
+  isMessageRead,
+  getMessagesReadStatus,
+} from '../localStorage';
 import { TemporaryEmail, STORAGE_KEYS } from '@/types';
 
 // Helper to create test email
@@ -311,6 +319,91 @@ describe('localStorage helpers', () => {
       expect(emailsSetCalls).toHaveLength(0);
 
       Object.defineProperty(localStorage, 'setItem', { value: originalSetItem });
+    });
+  });
+
+  describe('markMessageAsRead', () => {
+    it('should mark a message as read', () => {
+      markMessageAsRead('msg-1');
+      
+      expect(isMessageRead('msg-1')).toBe(true);
+    });
+
+    it('should mark multiple messages as read', () => {
+      markMessageAsRead('msg-1');
+      markMessageAsRead('msg-2');
+      
+      expect(isMessageRead('msg-1')).toBe(true);
+      expect(isMessageRead('msg-2')).toBe(true);
+    });
+
+    it('should persist read status in localStorage', () => {
+      markMessageAsRead('msg-1');
+      
+      const stored = localStorage.getItem('tempmail_message_read_status');
+      expect(stored).toBeTruthy();
+      
+      const parsed = JSON.parse(stored!);
+      expect(parsed['msg-1']).toBe(true);
+    });
+  });
+
+  describe('isMessageRead', () => {
+    it('should return false for unread messages', () => {
+      expect(isMessageRead('msg-1')).toBe(false);
+    });
+
+    it('should return true for read messages', () => {
+      markMessageAsRead('msg-1');
+      
+      expect(isMessageRead('msg-1')).toBe(true);
+    });
+
+    it('should return false for non-existent messages', () => {
+      markMessageAsRead('msg-1');
+      
+      expect(isMessageRead('msg-2')).toBe(false);
+    });
+
+    it('should handle corrupted localStorage data', () => {
+      localStorage.setItem('tempmail_message_read_status', 'invalid json {');
+      
+      expect(isMessageRead('msg-1')).toBe(false);
+    });
+  });
+
+  describe('getMessagesReadStatus', () => {
+    it('should return read status for multiple messages', () => {
+      markMessageAsRead('msg-1');
+      markMessageAsRead('msg-3');
+      
+      const status = getMessagesReadStatus(['msg-1', 'msg-2', 'msg-3']);
+      
+      expect(status['msg-1']).toBe(true);
+      expect(status['msg-2']).toBe(false);
+      expect(status['msg-3']).toBe(true);
+    });
+
+    it('should return empty object for empty array', () => {
+      const status = getMessagesReadStatus([]);
+      
+      expect(status).toEqual({});
+    });
+
+    it('should return false for all messages if none are read', () => {
+      const status = getMessagesReadStatus(['msg-1', 'msg-2']);
+      
+      expect(status['msg-1']).toBe(false);
+      expect(status['msg-2']).toBe(false);
+    });
+
+    it('should handle corrupted localStorage data', () => {
+      localStorage.setItem('tempmail_message_read_status', 'invalid json {');
+      
+      const status = getMessagesReadStatus(['msg-1', 'msg-2']);
+      
+      expect(status['msg-1']).toBe(false);
+      expect(status['msg-2']).toBe(false);
     });
   });
 });

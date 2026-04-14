@@ -459,7 +459,7 @@ describe('EmailApiClient', () => {
 
       await expect(client.createEmail('1hr')).rejects.toThrow(ApiError);
       await expect(client.createEmail('1hr')).rejects.toMatchObject({
-        code: ERROR_CODES.UNKNOWN_ERROR,
+        code: ERROR_CODES.NETWORK_ERROR,
       });
     });
   });

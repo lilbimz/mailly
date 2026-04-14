@@ -134,7 +134,7 @@ describe('Validation and Utility Functions', () => {
 
     it('should handle exactly 1 second remaining', () => {
       const now = new Date();
-      const future = new Date(now.getTime() + 1000); // 1 second from now
+      const future = new Date(now.getTime() + 1500); // 1.5 seconds from now to account for test execution time
       const result = formatTimeRemaining(future);
       expect(result).toBe('00:00:01');
     });

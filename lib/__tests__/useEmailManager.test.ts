@@ -15,6 +15,7 @@ describe('useEmailManager', () => {
   const mockRemoveEmail = jest.fn();
   const mockLoadEmails = jest.fn();
   const mockCleanupExpiredEmails = jest.fn();
+  const mockGetMessagesReadStatus = jest.fn();
 
   beforeEach(() => {
     // Clear all mocks
@@ -26,10 +27,12 @@ describe('useEmailManager', () => {
     (localStorageModule.removeEmail as jest.Mock) = mockRemoveEmail;
     (localStorageModule.loadEmails as jest.Mock) = mockLoadEmails;
     (localStorageModule.cleanupExpiredEmails as jest.Mock) = mockCleanupExpiredEmails;
+    (localStorageModule.getMessagesReadStatus as jest.Mock) = mockGetMessagesReadStatus;
 
     // Default mock implementations
     mockLoadEmails.mockReturnValue([]);
     mockCleanupExpiredEmails.mockReturnValue(0);
+    mockGetMessagesReadStatus.mockReturnValue({});
   });
 
   afterEach(() => {
@@ -81,6 +84,34 @@ describe('useEmailManager', () => {
       expect(result.current.activeEmail).toBeNull();
     });
 
+    it('should restore previously selected email from localStorage', () => {
+      mockLoadEmails.mockReturnValue(mockTemporaryEmails);
+      localStorage.setItem('tempmail_active_email', mockTemporaryEmails[1].id);
+
+      const { result } = renderHook(() => useEmailManager());
+
+      expect(result.current.activeEmail).toEqual(mockTemporaryEmails[1]);
+    });
+
+    it('should not restore active email if it no longer exists', () => {
+      mockLoadEmails.mockReturnValue(mockTemporaryEmails);
+      localStorage.setItem('tempmail_active_email', 'non-existent-id');
+
+      const { result } = renderHook(() => useEmailManager());
+
+      expect(result.current.activeEmail).toBeNull();
+      expect(localStorage.getItem('tempmail_active_email')).toBeNull();
+    });
+
+    it('should prioritize restored email over auto-select', () => {
+      mockLoadEmails.mockReturnValue([mockTemporaryEmail]);
+      localStorage.setItem('tempmail_active_email', mockTemporaryEmail.id);
+
+      const { result } = renderHook(() => useEmailManager());
+
+      expect(result.current.activeEmail).toEqual(mockTemporaryEmail);
+    });
+
     it('should handle initialization errors gracefully', () => {
       const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
       mockLoadEmails.mockImplementation(() => {
@@ -113,7 +144,7 @@ describe('useEmailManager', () => {
         await result.current.createEmail('1hr');
       });
 
-      expect(emailApiClient.createEmail).toHaveBeenCalledWith('1hr');
+      expect(emailApiClient.createEmail).toHaveBeenCalledWith('1hr', undefined);
       expect(result.current.emails).toContainEqual(newEmail);
     });
 
@@ -324,6 +355,22 @@ describe('useEmailManager', () => {
       expect(result.current.activeEmail).toBeNull();
     });
 
+    it('should clear active email from localStorage when deleted', async () => {
+      (emailApiClient.deleteEmail as jest.Mock).mockResolvedValue(undefined);
+      mockLoadEmails.mockReturnValue([mockTemporaryEmail]);
+
+      const { result } = renderHook(() => useEmailManager());
+
+      // Active email is auto-selected and saved to localStorage
+      expect(localStorage.getItem('tempmail_active_email')).toBe(mockTemporaryEmail.id);
+
+      await act(async () => {
+        await result.current.deleteEmail(mockTemporaryEmail.id);
+      });
+
+      expect(localStorage.getItem('tempmail_active_email')).toBeNull();
+    });
+
     it('should not clear active email if different email deleted', async () => {
       (emailApiClient.deleteEmail as jest.Mock).mockResolvedValue(undefined);
       mockLoadEmails.mockReturnValue(mockTemporaryEmails);
@@ -457,6 +504,18 @@ describe('useEmailManager', () => {
       expect(result.current.activeEmail).toEqual(mockTemporaryEmails[1]);
     });
 
+    it('should persist active email ID to localStorage', () => {
+      mockLoadEmails.mockReturnValue(mockTemporaryEmails);
+
+      const { result } = renderHook(() => useEmailManager());
+
+      act(() => {
+        result.current.selectEmail(mockTemporaryEmails[1].id);
+      });
+
+      expect(localStorage.getItem('tempmail_active_email')).toBe(mockTemporaryEmails[1].id);
+    });
+
     it('should clear error when selecting email', () => {
       mockLoadEmails.mockReturnValue(mockTemporaryEmails);
 
@@ -546,6 +605,30 @@ describe('useEmailManager', () => {
       });
 
       expect(result.current.activeEmail).toBeNull();
+    });
+
+    it('should clear active email from localStorage when removed during refresh', () => {
+      const updatedEmails = [mockTemporaryEmails[1]];
+      mockLoadEmails
+        .mockReturnValueOnce(mockTemporaryEmails)
+        .mockReturnValueOnce(updatedEmails);
+      mockCleanupExpiredEmails.mockReturnValue(1);
+
+      const { result } = renderHook(() => useEmailManager());
+
+      // Select first email
+      act(() => {
+        result.current.selectEmail(mockTemporaryEmails[0].id);
+      });
+
+      expect(localStorage.getItem('tempmail_active_email')).toBe(mockTemporaryEmails[0].id);
+
+      // Refresh (first email is removed)
+      act(() => {
+        result.current.refreshEmails();
+      });
+
+      expect(localStorage.getItem('tempmail_active_email')).toBeNull();
     });
 
     it('should keep active email if it still exists', () => {
@@ -810,6 +893,89 @@ describe('useEmailManager', () => {
       });
 
       expect(result.current.error).toBeNull();
+    });
+  });
+
+  describe('updateUnreadCount', () => {
+    it('should update unread count for specific email', () => {
+      mockLoadEmails.mockReturnValue(mockTemporaryEmails);
+
+      const { result } = renderHook(() => useEmailManager());
+
+      const messages = [
+        { id: 'msg1', isRead: false } as any,
+        { id: 'msg2', isRead: false } as any,
+        { id: 'msg3', isRead: true } as any,
+      ];
+
+      act(() => {
+        result.current.updateUnreadCount(mockTemporaryEmails[0].id, messages);
+      });
+
+      const updatedEmail = result.current.emails.find(e => e.id === mockTemporaryEmails[0].id);
+      expect(updatedEmail?.unreadCount).toBe(2);
+    });
+
+    it('should calculate unread count correctly', () => {
+      mockLoadEmails.mockReturnValue([mockTemporaryEmail]);
+
+      const { result } = renderHook(() => useEmailManager());
+
+      const allReadMessages = [
+        { id: 'msg1', isRead: true } as any,
+        { id: 'msg2', isRead: true } as any,
+      ];
+
+      act(() => {
+        result.current.updateUnreadCount(mockTemporaryEmail.id, allReadMessages);
+      });
+
+      expect(result.current.emails[0].unreadCount).toBe(0);
+    });
+
+    it('should not affect other emails', () => {
+      mockLoadEmails.mockReturnValue(mockTemporaryEmails);
+
+      const { result } = renderHook(() => useEmailManager());
+
+      const messages = [
+        { id: 'msg1', isRead: false } as any,
+      ];
+
+      const otherEmailInitialCount = mockTemporaryEmails[1].unreadCount;
+
+      act(() => {
+        result.current.updateUnreadCount(mockTemporaryEmails[0].id, messages);
+      });
+
+      const otherEmail = result.current.emails.find(e => e.id === mockTemporaryEmails[1].id);
+      expect(otherEmail?.unreadCount).toBe(otherEmailInitialCount);
+    });
+
+    it('should handle empty message array', () => {
+      mockLoadEmails.mockReturnValue([mockTemporaryEmail]);
+
+      const { result } = renderHook(() => useEmailManager());
+
+      act(() => {
+        result.current.updateUnreadCount(mockTemporaryEmail.id, []);
+      });
+
+      expect(result.current.emails[0].unreadCount).toBe(0);
+    });
+
+    it('should handle non-existent email ID gracefully', () => {
+      mockLoadEmails.mockReturnValue(mockTemporaryEmails);
+
+      const { result } = renderHook(() => useEmailManager());
+
+      const initialEmails = [...result.current.emails];
+
+      act(() => {
+        result.current.updateUnreadCount('non-existent-id', []);
+      });
+
+      expect(result.current.emails).toEqual(initialEmails);
     });
   });
 });
