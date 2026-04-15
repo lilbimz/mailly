@@ -16,7 +16,7 @@ function ThemeToggle({ theme, onThemeChange }: ThemeToggleProps) {
   return (
     <button
       onClick={handleToggle}
-      className="p-2 rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors min-w-[44px] min-h-[44px] touch-manipulation"
+      className="p-2 rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors min-w-[44px] min-h-[44px] touch-manipulation flex items-center justify-center"
       aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
       aria-pressed={theme === 'dark'}
     >

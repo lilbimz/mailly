@@ -10,7 +10,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // The Digital Sanctuary Color Palette
+        // The Digital Sanctuary Color Palette - Dark Mode (default)
         'midnight': {
           DEFAULT: '#10141a',
           dark: '#0a0e14',

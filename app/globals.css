@@ -4,6 +4,14 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Light theme variables */
+:root.light {
+  --background: #ffffff;
+  --foreground: #1a1f28;
+}
+
+/* Dark theme variables */
+:root.dark,
 :root {
   --background: #10141a;
   --foreground: #e8eaf0;
@@ -15,6 +23,72 @@ body {
   font-family: 'Inter', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Light mode overrides */
+.light {
+  --background: #ffffff;
+  --foreground: #1a1f28;
+}
+
+.light body {
+  background-color: #ffffff;
+  color: #1a1f28;
+}
+
+.light .bg-midnight {
+  background-color: #f5f7fa !important;
+}
+
+.light .bg-surface-container-lowest {
+  background-color: #ffffff !important;
+}
+
+.light .bg-surface-container-low {
+  background-color: #f9fafb !important;
+}
+
+.light .bg-surface-container {
+  background-color: #f0f2f5 !important;
+}
+
+.light .bg-surface-container-high {
+  background-color: #e8eaf0 !important;
+}
+
+.light .bg-surface {
+  background-color: #f5f7fa !important;
+}
+
+.light .text-on-surface {
+  color: #1a1f28 !important;
+}
+
+.light .text-on-surface-variant {
+  color: #4a5163 !important;
+}
+
+.light .border-surface-container-low {
+  border-color: #e8eaf0 !important;
+}
+
+.light .border-outline {
+  border-color: #c2c6d9 !important;
+}
+
+.light .glass {
+  background: rgba(255, 255, 255, 0.7) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.light header {
+  background-color: rgba(255, 255, 255, 0.8) !important;
+  border-bottom-color: #e8eaf0 !important;
+}
+
+.light footer {
+  background-color: #ffffff !important;
 }
 
 /* Glassmorphism utility */

@@ -1,10 +1,12 @@
 'use client';
 
 import { memo, useState } from 'react';
+import { useTheme } from '@/lib/useTheme';
 import ThemeToggle from './ThemeToggle';
 
 function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [theme, setTheme] = useTheme();
 
   return (
     <header className="sticky top-0 z-50 bg-midnight/80 backdrop-blur-xl border-b border-surface-container-low">
@@ -32,10 +34,7 @@ function Header() {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-4">
-            <button className="hidden sm:block px-4 sm:px-5 py-2 text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors rounded-lg hover:bg-surface-container">
-              Get Pro
-            </button>
-            <ThemeToggle />
+            <ThemeToggle theme={theme} onThemeChange={setTheme} />
             
             {/* Mobile menu button */}
             <button
@@ -89,9 +88,6 @@ function Header() {
               >
                 API
               </a>
-              <button className="sm:hidden w-full text-left px-3 py-2 text-base font-medium text-on-surface-variant hover:text-on-surface transition-colors rounded-lg hover:bg-surface-container">
-                Get Pro
-              </button>
             </div>
           </nav>
         )}
