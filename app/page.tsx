@@ -124,7 +124,7 @@ export default function Home() {
       <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-            TempMail Pro
+            Mailly
           </h1>
           <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
             Create temporary disposable email addresses

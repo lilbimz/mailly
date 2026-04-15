@@ -1,5 +1,5 @@
 /**
- * Comprehensive error scenario tests for TempMail Pro
+ * Comprehensive error scenario tests for Mailly
  * Tests error boundary, API errors, network errors, and localStorage quota exceeded
  * 
  * **Validates: Requirements R1.5, R2.4, R4.5, R6.5, R8.5**

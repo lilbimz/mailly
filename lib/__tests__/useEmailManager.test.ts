@@ -86,7 +86,7 @@ describe('useEmailManager', () => {
 
     it('should restore previously selected email from localStorage', () => {
       mockLoadEmails.mockReturnValue(mockTemporaryEmails);
-      localStorage.setItem('tempmail_active_email', mockTemporaryEmails[1].id);
+      localStorage.setItem('mailly_active_email', mockTemporaryEmails[1].id);
 
       const { result } = renderHook(() => useEmailManager());
 
@@ -95,17 +95,17 @@ describe('useEmailManager', () => {
 
     it('should not restore active email if it no longer exists', () => {
       mockLoadEmails.mockReturnValue(mockTemporaryEmails);
-      localStorage.setItem('tempmail_active_email', 'non-existent-id');
+      localStorage.setItem('mailly_active_email', 'non-existent-id');
 
       const { result } = renderHook(() => useEmailManager());
 
       expect(result.current.activeEmail).toBeNull();
-      expect(localStorage.getItem('tempmail_active_email')).toBeNull();
+      expect(localStorage.getItem('mailly_active_email')).toBeNull();
     });
 
     it('should prioritize restored email over auto-select', () => {
       mockLoadEmails.mockReturnValue([mockTemporaryEmail]);
-      localStorage.setItem('tempmail_active_email', mockTemporaryEmail.id);
+      localStorage.setItem('mailly_active_email', mockTemporaryEmail.id);
 
       const { result } = renderHook(() => useEmailManager());
 
@@ -362,13 +362,13 @@ describe('useEmailManager', () => {
       const { result } = renderHook(() => useEmailManager());
 
       // Active email is auto-selected and saved to localStorage
-      expect(localStorage.getItem('tempmail_active_email')).toBe(mockTemporaryEmail.id);
+      expect(localStorage.getItem('mailly_active_email')).toBe(mockTemporaryEmail.id);
 
       await act(async () => {
         await result.current.deleteEmail(mockTemporaryEmail.id);
       });
 
-      expect(localStorage.getItem('tempmail_active_email')).toBeNull();
+      expect(localStorage.getItem('mailly_active_email')).toBeNull();
     });
 
     it('should not clear active email if different email deleted', async () => {
@@ -513,7 +513,7 @@ describe('useEmailManager', () => {
         result.current.selectEmail(mockTemporaryEmails[1].id);
       });
 
-      expect(localStorage.getItem('tempmail_active_email')).toBe(mockTemporaryEmails[1].id);
+      expect(localStorage.getItem('mailly_active_email')).toBe(mockTemporaryEmails[1].id);
     });
 
     it('should clear error when selecting email', () => {
@@ -621,14 +621,14 @@ describe('useEmailManager', () => {
         result.current.selectEmail(mockTemporaryEmails[0].id);
       });
 
-      expect(localStorage.getItem('tempmail_active_email')).toBe(mockTemporaryEmails[0].id);
+      expect(localStorage.getItem('mailly_active_email')).toBe(mockTemporaryEmails[0].id);
 
       // Refresh (first email is removed)
       act(() => {
         result.current.refreshEmails();
       });
 
-      expect(localStorage.getItem('tempmail_active_email')).toBeNull();
+      expect(localStorage.getItem('mailly_active_email')).toBeNull();
     });
 
     it('should keep active email if it still exists', () => {

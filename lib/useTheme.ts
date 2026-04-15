@@ -16,7 +16,7 @@ export type Theme = 'light' | 'dark';
  * setTheme('dark'); // Updates theme and persists to localStorage
  */
 export function useTheme(): [Theme, (theme: Theme) => void] {
-  const [theme, setTheme] = useLocalStorage<Theme>('tempmail_theme', 'light');
+  const [theme, setTheme] = useLocalStorage<Theme>('mailly_theme', 'light');
 
   // Apply theme class to document root element
   useEffect(() => {

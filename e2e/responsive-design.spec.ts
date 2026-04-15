@@ -32,7 +32,7 @@ test.describe('Responsive Design - Layout Tests', () => {
         const header = page.locator('header');
         await expect(header).toBeVisible();
         
-        const title = page.locator('h1:has-text("TempMail Pro")');
+        const title = page.locator('h1:has-text("Mailly")');
         await expect(title).toBeVisible();
         
         const subtitle = page.locator('text=Create temporary disposable email addresses');
@@ -357,7 +357,7 @@ test.describe('Responsive Layout Transitions', () => {
     
     // Verify desktop layout still works
     await expect(header).toBeVisible();
-    const title = page.locator('h1:has-text("TempMail Pro")');
+    const title = page.locator('h1:has-text("Mailly")');
     await expect(title).toBeVisible();
   });
 
@@ -375,7 +375,7 @@ test.describe('Responsive Layout Transitions', () => {
     
     // Verify mobile layout still works
     await expect(header).toBeVisible();
-    const title = page.locator('h1:has-text("TempMail Pro")');
+    const title = page.locator('h1:has-text("Mailly")');
     await expect(title).toBeVisible();
   });
 

@@ -340,7 +340,7 @@ describe('localStorage helpers', () => {
     it('should persist read status in localStorage', () => {
       markMessageAsRead('msg-1');
       
-      const stored = localStorage.getItem('tempmail_message_read_status');
+      const stored = localStorage.getItem('mailly_message_read_status');
       expect(stored).toBeTruthy();
       
       const parsed = JSON.parse(stored!);
@@ -366,7 +366,7 @@ describe('localStorage helpers', () => {
     });
 
     it('should handle corrupted localStorage data', () => {
-      localStorage.setItem('tempmail_message_read_status', 'invalid json {');
+      localStorage.setItem('mailly_message_read_status', 'invalid json {');
       
       expect(isMessageRead('msg-1')).toBe(false);
     });
@@ -398,7 +398,7 @@ describe('localStorage helpers', () => {
     });
 
     it('should handle corrupted localStorage data', () => {
-      localStorage.setItem('tempmail_message_read_status', 'invalid json {');
+      localStorage.setItem('mailly_message_read_status', 'invalid json {');
       
       const status = getMessagesReadStatus(['msg-1', 'msg-2']);
       

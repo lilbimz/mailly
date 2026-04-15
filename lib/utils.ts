@@ -1,4 +1,4 @@
-// Utility and Validation Functions for TempMail Pro
+// Utility and Validation Functions for Mailly
 
 import { Duration, DURATION_MS } from '@/types';
 

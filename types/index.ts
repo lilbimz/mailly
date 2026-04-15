@@ -1,4 +1,4 @@
-// Type Definitions for TempMail Pro Web Application
+// Type Definitions for Mailly Web Application
 
 /**
  * Duration options for temporary email validity
@@ -82,8 +82,8 @@ export const ERROR_CODES = {
  * localStorage keys for consistent storage access
  */
 export const STORAGE_KEYS = {
-  EMAILS: 'tempmail_emails',
-  THEME: 'tempmail_theme',
-  NOTIFICATIONS: 'tempmail_notifications',
-  LAST_CLEANUP: 'tempmail_last_cleanup',
+  EMAILS: 'mailly_emails',
+  THEME: 'mailly_theme',
+  NOTIFICATIONS: 'mailly_notifications',
+  LAST_CLEANUP: 'mailly_last_cleanup',
 } as const;

@@ -1,4 +1,4 @@
-// localStorage Helper Functions for TempMail Pro
+// localStorage Helper Functions for Mailly
 
 import { TemporaryEmail, STORAGE_KEYS, ERROR_CODES } from '@/types';
 import { isEmailExpired } from './utils';
@@ -210,7 +210,7 @@ export function cleanupExpiredEmails(): number {
 /**
  * Storage key for message read status
  */
-const MESSAGE_READ_STATUS_KEY = 'tempmail_message_read_status';
+const MESSAGE_READ_STATUS_KEY = 'mailly_message_read_status';
 
 /**
  * Get read status for all messages

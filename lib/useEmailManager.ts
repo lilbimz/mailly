@@ -25,7 +25,7 @@ export interface UseEmailManagerReturn {
 /**
  * Storage key for active email ID
  */
-const ACTIVE_EMAIL_KEY = 'tempmail_active_email';
+const ACTIVE_EMAIL_KEY = 'mailly_active_email';
 
 /**
  * Custom hook for managing temporary email addresses

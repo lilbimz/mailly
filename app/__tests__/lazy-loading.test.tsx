@@ -28,7 +28,7 @@ describe('Lazy Loading', () => {
     render(<Home />);
     
     // Verify the page renders without MessageViewer initially
-    expect(screen.getByText('TempMail Pro')).toBeInTheDocument();
+    expect(screen.getByText('Mailly')).toBeInTheDocument();
     
     // MessageViewer should not be in the initial bundle
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
@@ -92,7 +92,7 @@ describe('Lazy Loading', () => {
     // Wait for lazy loaded component
     await waitFor(() => {
       // The Suspense fallback or the actual component should be present
-      expect(screen.getByText('TempMail Pro')).toBeInTheDocument();
+      expect(screen.getByText('Mailly')).toBeInTheDocument();
     });
   });
 

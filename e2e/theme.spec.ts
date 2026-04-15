@@ -66,7 +66,7 @@ test.describe('Theme Management', () => {
     expect(hasDarkClass).toBeTruthy();
 
     // Verify theme is stored in localStorage
-    const storedTheme = await page.evaluate(() => localStorage.getItem('tempmail_theme'));
+    const storedTheme = await page.evaluate(() => localStorage.getItem('mailly_theme'));
     expect(storedTheme).toBe(JSON.stringify('dark'));
 
     // Refresh the page
@@ -79,7 +79,7 @@ test.describe('Theme Management', () => {
     await page.waitForTimeout(1000);
 
     // Check localStorage value after reload
-    const storedThemeAfterReload = await page.evaluate(() => localStorage.getItem('tempmail_theme'));
+    const storedThemeAfterReload = await page.evaluate(() => localStorage.getItem('mailly_theme'));
     
     // Verify localStorage still has the dark theme
     expect(storedThemeAfterReload).toBe(JSON.stringify('dark'));
@@ -114,7 +114,7 @@ test.describe('Theme Management', () => {
     expect(toggleBg).toBeTruthy();
 
     // Verify main heading is visible
-    const heading = page.getByRole('heading', { name: /tempmail pro/i });
+    const heading = page.getByRole('heading', { name: /mailly/i });
     await expect(heading).toBeVisible();
 
     // Verify email creator section is visible
@@ -151,7 +151,7 @@ test.describe('Theme Management', () => {
     expect(toggleBg).toBeTruthy();
 
     // Verify main heading is visible
-    const heading = page.getByRole('heading', { name: /tempmail pro/i });
+    const heading = page.getByRole('heading', { name: /mailly/i });
     await expect(heading).toBeVisible();
 
     // Verify email creator section is visible

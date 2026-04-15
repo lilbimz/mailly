@@ -66,13 +66,13 @@ describe('Theme Management Integration', () => {
     });
 
     // Check that theme is persisted to localStorage
-    const storedTheme = localStorageMock.getItem('tempmail_theme');
+    const storedTheme = localStorageMock.getItem('mailly_theme');
     expect(storedTheme).toBe('"dark"');
   });
 
   it('should load theme from localStorage on mount', () => {
     // Pre-populate localStorage with dark theme
-    localStorageMock.setItem('tempmail_theme', '"dark"');
+    localStorageMock.setItem('mailly_theme', '"dark"');
 
     render(
       <ThemeProvider>

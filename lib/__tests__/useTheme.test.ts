@@ -34,7 +34,7 @@ describe('useTheme', () => {
     const { result } = renderHook(() => useTheme());
     
     expect(result.current[0]).toBe('light');
-    expect(useLocalStorage).toHaveBeenCalledWith('tempmail_theme', 'light');
+    expect(useLocalStorage).toHaveBeenCalledWith('mailly_theme', 'light');
   });
 
   it('should apply theme class to document root on mount', () => {
@@ -101,6 +101,6 @@ describe('useTheme', () => {
   it('should persist theme preference using useLocalStorage', () => {
     renderHook(() => useTheme());
     
-    expect(useLocalStorage).toHaveBeenCalledWith('tempmail_theme', 'light');
+    expect(useLocalStorage).toHaveBeenCalledWith('mailly_theme', 'light');
   });
 });

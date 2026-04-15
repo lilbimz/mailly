@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * E2E Performance tests for TempMail Pro
+ * E2E Performance tests for Mailly
  * **Validates: Requirements All (performance)**
  * 
  * Performance Targets (Production Build):
@@ -48,7 +48,7 @@ test.describe('Performance Tests', () => {
     expect(loadTime).toBeLessThan(maxLoadTime);
     
     // Verify critical content is visible
-    await expect(page.getByRole('heading', { name: /tempmail pro/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /mailly/i })).toBeVisible();
     await expect(page.getByText(/create temporary email/i)).toBeVisible();
   });
 
