@@ -131,21 +131,35 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-midnight">
+    <main className="min-h-screen bg-midnight relative pt-[72px]">
+      {/* Animated Background Gradients */}
+      <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 0 }}>
+        <div className="absolute -top-48 left-1/4 w-[500px] h-[500px] bg-[#36ffc4]/20 rounded-full blur-3xl animate-pulse" 
+             style={{ animationDuration: '4s' }} />
+        <div className="absolute -bottom-48 -right-48 w-[500px] h-[500px] bg-[#2ee0ad]/20 rounded-full blur-3xl animate-pulse" 
+             style={{ animationDuration: '6s', animationDelay: '1s' }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-[#36ffc4]/10 rounded-full blur-3xl animate-pulse" 
+             style={{ animationDuration: '8s', animationDelay: '2s' }} />
+      </div>
+
       {/* Header */}
       <Header />
 
       {/* Hero Section */}
-      <Hero />
+      <div className="relative z-10 animate-fade-in">
+        <Hero />
+      </div>
 
       {/* Email Creator Section */}
-      <div className="max-w-lg mx-auto px-3 sm:px-4 lg:px-8 -mt-2 sm:-mt-4">
+      <div className="max-w-lg mx-auto px-3 sm:px-4 lg:px-8 -mt-2 sm:-mt-4 relative z-10 animate-fade-in-up" 
+           style={{ animationDelay: '0.1s' }}>
         <EmailCreator onCreateEmail={handleCreateEmail} disabled={isCreatingEmail} />
       </div>
 
       {/* Email List Section with Integrated Inbox */}
       {emails.length > 0 && (
-        <div className="max-w-4xl mx-auto px-3 sm:px-4 lg:px-8 mt-12 sm:mt-16">
+        <div className="max-w-4xl mx-auto px-3 sm:px-4 lg:px-8 mt-12 sm:mt-16 relative z-10 animate-fade-in-up" 
+             style={{ animationDelay: '0.2s' }}>
           <EmailList
             emails={emails}
             activeEmailId={activeEmail?.id || null}
@@ -160,21 +174,28 @@ export default function Home() {
       )}
 
       {/* Features Section */}
-      <Features />
+      <div className="relative z-10 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+        <Features />
+      </div>
 
       {/* Footer */}
-      <footer className="bg-surface-container-lowest py-8 sm:py-12 mt-16 sm:mt-24">
+      <footer className="bg-surface-container-lowest py-8 sm:py-12 mt-16 sm:mt-24 relative z-10">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 sm:gap-6">
             <div className="text-center md:text-left">
               <h3 className="font-display text-sm sm:text-base text-on-surface mb-1 sm:mb-2">Mailly</h3>
-              <p className="text-xs sm:text-sm text-on-surface-variant">© 2026 Mailly Sanctuary. Built for the ephemeral.</p>
+              <p className="text-xs sm:text-sm text-on-surface-variant">
+                © 2026 Mailly Sanctuary. Built for the ephemeral.
+              </p>
+              <p className="text-xs text-on-surface-variant/70 mt-1">
+                A project by <span className="text-[#36ffc4]">Naranta Labs</span>
+              </p>
             </div>
             <div className="flex flex-wrap justify-center gap-4 sm:gap-6 text-xs sm:text-sm text-on-surface-variant">
-              <a href="#" className="hover:text-primary transition-colors">Privacy Policy</a>
-              <a href="#" className="hover:text-primary transition-colors">Terms of Service</a>
-              <a href="#" className="hover:text-primary transition-colors">Status</a>
-              <a href="#" className="hover:text-primary transition-colors">Contact</a>
+              <a href="/privacy" className="hover:text-[#36ffc4] transition-colors">Privacy Policy</a>
+              <a href="/terms" className="hover:text-[#36ffc4] transition-colors">Terms of Service</a>
+              <a href="/status" className="hover:text-[#36ffc4] transition-colors">Status</a>
+              <a href="/contact" className="hover:text-[#36ffc4] transition-colors">Contact</a>
             </div>
           </div>
         </div>
