@@ -114,7 +114,7 @@ function Features() {
             Unmatched Privacy Layers
           </h2>
           <p className="text-sm sm:text-base text-on-surface-variant max-w-2xl mx-auto leading-relaxed px-4">
-            Our infrastructure sits on a zero-knowledge mesh, meaning even we can't see who you are communicating with.
+            Our infrastructure sits on a zero-knowledge mesh, meaning even we can&apos;t see who you are communicating with.
           </p>
         </div>
       </div>

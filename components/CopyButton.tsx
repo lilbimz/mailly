@@ -7,7 +7,7 @@ interface CopyButtonProps {
   label?: string;
 }
 
-function CopyButton({ text, label = 'Copy' }: CopyButtonProps) {
+function CopyButtonComponent({ text, label = 'Copy' }: CopyButtonProps) {
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -68,4 +68,4 @@ function CopyButton({ text, label = 'Copy' }: CopyButtonProps) {
 }
 
 // Memoize the component to prevent unnecessary re-renders
-export const CopyButton = memo(CopyButton);
+export const CopyButton = memo(CopyButtonComponent);

@@ -1,5 +1,15 @@
 import Header from '@/components/Header';
 import Link from 'next/link';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Terms of Service - Mailly Temporary Email',
+  description: 'Read Mailly&apos;s terms of service. Understand acceptable use, service limitations, and your rights when using our temporary email service.',
+  openGraph: {
+    title: 'Terms of Service - Mailly',
+    description: 'Terms and conditions for using Mailly temporary email service.',
+  },
+};
 
 export default function TermsOfService() {
   return (
@@ -65,7 +75,7 @@ export default function TermsOfService() {
             <ul className="list-disc list-inside space-y-2 ml-4">
               <li>Emails are temporary and will be automatically deleted</li>
               <li>We do not guarantee delivery of all emails</li>
-              <li>The service is provided "as is" without warranties</li>
+              <li>The service is provided &quot;as is&quot; without warranties</li>
               <li>We reserve the right to modify or discontinue the service at any time</li>
             </ul>
           </section>

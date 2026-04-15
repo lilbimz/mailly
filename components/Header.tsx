@@ -21,11 +21,14 @@ function Header() {
               <a href="/#features" className="text-sm text-on-surface-variant hover:text-on-surface transition-colors">
                 Features
               </a>
+              <a href="/faq" className="text-sm text-on-surface-variant hover:text-on-surface transition-colors">
+                FAQ
+              </a>
+              <a href="/blog" className="text-sm text-on-surface-variant hover:text-on-surface transition-colors">
+                Blog
+              </a>
               <a href="/security" className="text-sm text-on-surface-variant hover:text-on-surface transition-colors">
                 Security
-              </a>
-              <a href="/domains" className="text-sm text-on-surface-variant hover:text-on-surface transition-colors">
-                Domains
               </a>
               <a href="/api-docs" className="text-sm text-on-surface-variant hover:text-on-surface transition-colors">
                 API
@@ -68,18 +71,25 @@ function Header() {
                 Features
               </a>
               <a 
+                href="/faq" 
+                className="text-base text-on-surface-variant hover:text-on-surface transition-colors py-2 px-3 rounded-lg hover:bg-surface-container"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                FAQ
+              </a>
+              <a 
+                href="/blog" 
+                className="text-base text-on-surface-variant hover:text-on-surface transition-colors py-2 px-3 rounded-lg hover:bg-surface-container"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Blog
+              </a>
+              <a 
                 href="/security" 
                 className="text-base text-on-surface-variant hover:text-on-surface transition-colors py-2 px-3 rounded-lg hover:bg-surface-container"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Security
-              </a>
-              <a 
-                href="/domains" 
-                className="text-base text-on-surface-variant hover:text-on-surface transition-colors py-2 px-3 rounded-lg hover:bg-surface-container"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Domains
               </a>
               <a 
                 href="/api-docs" 

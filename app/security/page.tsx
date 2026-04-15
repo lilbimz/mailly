@@ -1,5 +1,15 @@
 import Header from '@/components/Header';
 import Link from 'next/link';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Security & Privacy - Mailly Secure Temporary Email',
+  description: 'Mailly uses end-to-end encryption, automatic deletion, and no tracking to protect your privacy. Learn about our security measures.',
+  openGraph: {
+    title: 'Security & Privacy - Mailly',
+    description: 'Learn how Mailly keeps your temporary emails secure with encryption and automatic deletion.',
+  },
+};
 
 export default function Security() {
   return (
@@ -80,7 +90,7 @@ export default function Security() {
               <div className="flex-1">
                 <h2 className="font-display text-xl text-on-surface mb-3">No Tracking or Analytics</h2>
                 <p className="text-on-surface-variant leading-relaxed">
-                  We don't track your activity, collect personal information, or use invasive analytics. 
+                  We don&apos;t track your activity, collect personal information, or use invasive analytics. 
                   Your email usage remains completely private.
                 </p>
               </div>

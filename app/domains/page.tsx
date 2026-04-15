@@ -97,7 +97,7 @@ export default function Domains() {
             <div>
               <h3 className="text-on-surface font-medium mb-2">Random Domain Option</h3>
               <p className="text-sm leading-relaxed">
-                When creating an email, you can choose "Random Domain" to let our system automatically 
+                When creating an email, you can choose &quot;Random Domain&quot; to let our system automatically 
                 select the best available domain based on current performance metrics.
               </p>
             </div>
@@ -134,7 +134,7 @@ export default function Domains() {
               <h3 className="text-on-surface font-medium mb-2">What if a domain stops working?</h3>
               <p className="text-sm text-on-surface-variant leading-relaxed">
                 If you experience issues with a specific domain, try creating a new email with a different 
-                domain or use the "Random Domain" option. Check our{' '}
+                domain or use the &quot;Random Domain&quot; option. Check our{' '}
                 <Link href="/status" className="text-[#36ffc4] hover:text-[#2ee0ad] transition-colors">Status Page</Link>
                 {' '}for real-time domain health information.
               </p>

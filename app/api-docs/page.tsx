@@ -41,7 +41,7 @@ export default function ApiDocs() {
           
           <p className="text-on-surface-variant text-lg max-w-2xl mx-auto leading-relaxed animate-fade-in-up" 
              style={{ animationDelay: '0.2s' }}>
-            We're working on a comprehensive API that will allow developers to integrate Mailly's 
+            We&apos;re working on a comprehensive API that will allow developers to integrate Mailly&apos;s 
             temporary email service into their applications.
           </p>
 

@@ -1,5 +1,15 @@
 import Header from '@/components/Header';
 import Link from 'next/link';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Privacy Policy - Mailly Temporary Email Service',
+  description: 'Learn how Mailly protects your privacy. We collect minimal data, store emails locally, and automatically delete all messages after expiration.',
+  openGraph: {
+    title: 'Privacy Policy - Mailly',
+    description: 'Learn how Mailly protects your privacy with automatic deletion and local storage.',
+  },
+};
 
 export default function PrivacyPolicy() {
   return (

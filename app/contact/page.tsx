@@ -4,6 +4,9 @@ import { useState } from 'react';
 import Header from '@/components/Header';
 import Link from 'next/link';
 
+// Note: metadata export not available in client components
+// SEO handled via layout.tsx and dynamic meta tags if needed
+
 export default function Contact() {
   const [formData, setFormData] = useState({
     name: '',
@@ -59,7 +62,7 @@ export default function Contact() {
           </h1>
           <p className="text-on-surface-variant text-lg max-w-2xl mx-auto leading-relaxed animate-fade-in-up" 
              style={{ animationDelay: '0.1s' }}>
-            Have questions or feedback? We'd love to hear from you.
+            Have questions or feedback? We&apos;d love to hear from you.
           </p>
         </div>
 

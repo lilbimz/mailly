@@ -83,6 +83,24 @@ npm start
 - `NEXT_PUBLIC_APP_URL`: Application URL (default: http://localhost:3000)
 - `RATE_LIMIT_WINDOW_MS`: Rate limit window in milliseconds (default: 60000)
 - `RATE_LIMIT_MAX_REQUESTS`: Maximum requests per window (default: 10)
+- `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION`: Google Search Console verification (optional)
+- `NEXT_PUBLIC_BING_SITE_VERIFICATION`: Bing Webmaster verification (optional)
+- `NEXT_PUBLIC_GA_MEASUREMENT_ID`: Google Analytics ID (optional)
+
+## SEO Features
+
+Mailly is optimized for search engines with:
+
+- **Metadata**: Comprehensive meta tags, Open Graph, and Twitter Cards
+- **Structured Data**: JSON-LD schema for WebApplication and FAQPage
+- **Sitemap**: Dynamic XML sitemap at `/sitemap.xml`
+- **Robots.txt**: Proper crawling directives at `/robots.txt`
+- **PWA**: Web App Manifest for installability
+- **Performance**: Code splitting, lazy loading, and optimized bundles
+- **Accessibility**: Semantic HTML, ARIA labels, keyboard navigation
+- **Content**: FAQ, Blog, and informational pages for better indexing
+
+For detailed SEO implementation, see [docs/SEO_OPTIMIZATION.md](docs/SEO_OPTIMIZATION.md).
 
 ## License
 
