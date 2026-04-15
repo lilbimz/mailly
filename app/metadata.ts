@@ -75,10 +75,10 @@ export const baseMetadata: Metadata = {
     canonical: siteUrl,
   },
   verification: {
-    google: 'your-google-verification-code',
-    yandex: 'your-yandex-verification-code',
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || '3bWNwCcMIBlbu8NEIG4ObvU_Az5xZGNfCUS-K0EpSws',
+    yandex: process.env.NEXT_PUBLIC_YANDEX_SITE_VERIFICATION,
     other: {
-      bing: 'your-bing-verification-code',
+      'msvalidate.01': process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION || 'A24F016A70AA0EDD2F8BE51D25466531',
     },
   },
 };
