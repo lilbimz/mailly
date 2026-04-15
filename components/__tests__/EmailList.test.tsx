@@ -149,9 +149,9 @@ describe('EmailList', () => {
         />
       );
 
-      // Find the parent container with border classes
+      // Find the parent container with border classes (now an li element)
       const email2Text = screen.getByText('test2@temp.mail');
-      const email2Container = email2Text.closest('div[class*="border-"]');
+      const email2Container = email2Text.closest('li[class*="border-"]');
       expect(email2Container).toHaveClass('border-blue-500');
     });
 
@@ -165,7 +165,7 @@ describe('EmailList', () => {
         />
       );
 
-      const containers = screen.getAllByText(/@temp\.mail/).map(el => el.closest('div[class*="border-"]'));
+      const containers = screen.getAllByText(/@temp\.mail/).map(el => el.closest('li[class*="border-"]'));
       containers.forEach(container => {
         expect(container).not.toHaveClass('border-blue-500');
         expect(container).toHaveClass('border-gray-200');
@@ -183,7 +183,7 @@ describe('EmailList', () => {
       );
 
       const email2Text = screen.getByText('test2@temp.mail');
-      const email2Container = email2Text.closest('div[class*="border-"]');
+      const email2Container = email2Text.closest('li[class*="border-"]');
       expect(email2Container).toHaveClass('border-gray-200');
       expect(email2Container).not.toHaveClass('border-blue-500');
     });

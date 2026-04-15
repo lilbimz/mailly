@@ -1,10 +1,9 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@/lib/__tests__/test-utils';
-import { MessageViewer } from '../MessageViewer';
+import { render, screen, fireEvent, waitFor } from '@/lib/__tests__/test-utils';
+import MessageViewer from '../MessageViewer';
 import { Message } from '@/types';
-import DOMPurify from 'dompurify';
 
-// Mock DOMPurify
+// Mock DOMPurify for dynamic import
 jest.mock('dompurify', () => ({
   __esModule: true,
   default: {
@@ -30,8 +29,6 @@ describe('MessageViewer', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    // Reset DOMPurify mock
-    (DOMPurify.sanitize as jest.Mock).mockImplementation((dirty: string) => dirty);
   });
 
   describe('message details rendering', () => {
@@ -115,14 +112,19 @@ describe('MessageViewer', () => {
       expect(bodyElement).toHaveClass('whitespace-pre-wrap');
     });
 
-    it('should not sanitize plain text messages', () => {
+    it('should not sanitize plain text messages', async () => {
+      const DOMPurify = await import('dompurify');
+      const sanitizeSpy = jest.spyOn(DOMPurify.default, 'sanitize');
+      
       const message = createMockMessage({
         body: 'Plain text with <tags>',
         isHtml: false,
       });
       render(<MessageViewer message={message} onClose={mockOnClose} />);
 
-      expect(DOMPurify.sanitize).not.toHaveBeenCalled();
+      // Wait a bit to ensure DOMPurify is not called
+      await new Promise(resolve => setTimeout(resolve, 100));
+      expect(sanitizeSpy).not.toHaveBeenCalled();
       expect(screen.getByText('Plain text with <tags>')).toBeInTheDocument();
     });
 
@@ -150,18 +152,21 @@ describe('MessageViewer', () => {
   });
 
   describe('HTML message display', () => {
-    it('should render HTML message when isHtml is true', () => {
+    it('should render HTML message when isHtml is true', async () => {
       const message = createMockMessage({
         body: '<p>This is <strong>HTML</strong> content.</p>',
         isHtml: true,
       });
       render(<MessageViewer message={message} onClose={mockOnClose} />);
 
-      expect(screen.getByText(/This is/)).toBeInTheDocument();
+      // Wait for DOMPurify to load and sanitize
+      await waitFor(() => {
+        expect(screen.getByText(/This is/)).toBeInTheDocument();
+      });
       expect(screen.getByText('HTML')).toBeInTheDocument();
     });
 
-    it('should render HTML with dangerouslySetInnerHTML', () => {
+    it('should render HTML with dangerouslySetInnerHTML', async () => {
       const message = createMockMessage({
         body: '<div><h1>Title</h1><p>Content</p></div>',
         isHtml: true,
@@ -170,11 +175,14 @@ describe('MessageViewer', () => {
         <MessageViewer message={message} onClose={mockOnClose} />
       );
 
-      const htmlContainer = container.querySelector('.prose');
-      expect(htmlContainer).toBeInTheDocument();
+      // Wait for DOMPurify to load
+      await waitFor(() => {
+        const htmlContainer = container.querySelector('.prose');
+        expect(htmlContainer).toBeInTheDocument();
+      });
     });
 
-    it('should apply prose styling to HTML messages', () => {
+    it('should apply prose styling to HTML messages', async () => {
       const message = createMockMessage({
         body: '<p>HTML content</p>',
         isHtml: true,
@@ -183,50 +191,69 @@ describe('MessageViewer', () => {
         <MessageViewer message={message} onClose={mockOnClose} />
       );
 
-      const htmlContainer = container.querySelector('.prose');
-      expect(htmlContainer).toHaveClass('prose');
-      expect(htmlContainer).toHaveClass('dark:prose-invert');
+      // Wait for DOMPurify to load
+      await waitFor(() => {
+        const htmlContainer = container.querySelector('.prose');
+        expect(htmlContainer).toHaveClass('prose');
+        expect(htmlContainer).toHaveClass('dark:prose-invert');
+      });
     });
 
-    it('should render complex HTML structures', () => {
+    it('should render complex HTML structures', async () => {
       const message = createMockMessage({
         body: '<ul><li>Item 1</li><li>Item 2</li></ul>',
         isHtml: true,
       });
       render(<MessageViewer message={message} onClose={mockOnClose} />);
 
-      expect(screen.getByText('Item 1')).toBeInTheDocument();
+      // Wait for DOMPurify to load
+      await waitFor(() => {
+        expect(screen.getByText('Item 1')).toBeInTheDocument();
+      });
       expect(screen.getByText('Item 2')).toBeInTheDocument();
     });
   });
 
   describe('HTML sanitization with DOMPurify', () => {
-    it('should sanitize HTML content before rendering', () => {
+    it('should sanitize HTML content before rendering', async () => {
+      const DOMPurify = await import('dompurify');
+      const sanitizeSpy = jest.spyOn(DOMPurify.default, 'sanitize');
+      
       const message = createMockMessage({
         body: '<p>Safe content</p><script>alert("xss")</script>',
         isHtml: true,
       });
       render(<MessageViewer message={message} onClose={mockOnClose} />);
 
-      expect(DOMPurify.sanitize).toHaveBeenCalledWith(
-        '<p>Safe content</p><script>alert("xss")</script>',
-        expect.objectContaining({
-          ALLOWED_TAGS: expect.arrayContaining(['p', 'strong', 'em', 'a']),
-          ALLOWED_ATTR: expect.arrayContaining(['href', 'target', 'class']),
-          ALLOW_DATA_ATTR: false,
-          ALLOWED_URI_REGEXP: expect.any(RegExp),
-        })
-      );
+      // Wait for DOMPurify to be called
+      await waitFor(() => {
+        expect(sanitizeSpy).toHaveBeenCalledWith(
+          '<p>Safe content</p><script>alert("xss")</script>',
+          expect.objectContaining({
+            ALLOWED_TAGS: expect.arrayContaining(['p', 'strong', 'em', 'a']),
+            ALLOWED_ATTR: expect.arrayContaining(['href', 'target', 'class']),
+            ALLOW_DATA_ATTR: false,
+            ALLOWED_URI_REGEXP: expect.any(RegExp),
+          })
+        );
+      });
     });
 
-    it('should use strict sanitization configuration', () => {
+    it('should use strict sanitization configuration', async () => {
+      const DOMPurify = await import('dompurify');
+      const sanitizeSpy = jest.spyOn(DOMPurify.default, 'sanitize');
+      
       const message = createMockMessage({
         body: '<p>Content</p>',
         isHtml: true,
       });
       render(<MessageViewer message={message} onClose={mockOnClose} />);
 
-      const sanitizeCall = (DOMPurify.sanitize as jest.Mock).mock.calls[0];
+      await waitFor(() => {
+        expect(sanitizeSpy).toHaveBeenCalled();
+      });
+
+      const sanitizeCall = sanitizeSpy.mock.calls[0];
       const config = sanitizeCall[1];
 
       expect(config.ALLOWED_TAGS).toContain('p');
@@ -236,53 +263,69 @@ describe('MessageViewer', () => {
       expect(config.ALLOW_DATA_ATTR).toBe(false);
     });
 
-    it('should sanitize HTML with allowed tags', () => {
+    it('should sanitize HTML with allowed tags', async () => {
       const message = createMockMessage({
         body: '<p>Paragraph</p><strong>Bold</strong><em>Italic</em>',
         isHtml: true,
       });
       render(<MessageViewer message={message} onClose={mockOnClose} />);
 
-      expect(DOMPurify.sanitize).toHaveBeenCalled();
-      expect(screen.getByText(/Paragraph/)).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByText(/Paragraph/)).toBeInTheDocument();
+      });
     });
 
-    it('should sanitize HTML with links', () => {
+    it('should sanitize HTML with links', async () => {
+      const DOMPurify = await import('dompurify');
+      const sanitizeSpy = jest.spyOn(DOMPurify.default, 'sanitize');
+      
       const message = createMockMessage({
         body: '<a href="https://example.com">Link</a>',
         isHtml: true,
       });
       render(<MessageViewer message={message} onClose={mockOnClose} />);
 
-      expect(DOMPurify.sanitize).toHaveBeenCalledWith(
-        '<a href="https://example.com">Link</a>',
-        expect.objectContaining({
-          ALLOWED_URI_REGEXP: expect.any(RegExp),
-        })
-      );
+      await waitFor(() => {
+        expect(sanitizeSpy).toHaveBeenCalledWith(
+          '<a href="https://example.com">Link</a>',
+          expect.objectContaining({
+            ALLOWED_URI_REGEXP: expect.any(RegExp),
+          })
+        );
+      });
     });
 
-    it('should only sanitize HTML messages, not plain text', () => {
+    it('should only sanitize HTML messages, not plain text', async () => {
+      const DOMPurify = await import('dompurify');
+      const sanitizeSpy = jest.spyOn(DOMPurify.default, 'sanitize');
+      
       const message = createMockMessage({
         body: 'Plain text message',
         isHtml: false,
       });
       render(<MessageViewer message={message} onClose={mockOnClose} />);
 
-      expect(DOMPurify.sanitize).not.toHaveBeenCalled();
+      // Wait a bit to ensure DOMPurify is not called
+      await new Promise(resolve => setTimeout(resolve, 100));
+      expect(sanitizeSpy).not.toHaveBeenCalled();
     });
 
-    it('should sanitize empty HTML content', () => {
+    it('should sanitize empty HTML content', async () => {
+      const DOMPurify = await import('dompurify');
+      const sanitizeSpy = jest.spyOn(DOMPurify.default, 'sanitize');
+      
       const message = createMockMessage({
         body: '',
         isHtml: true,
       });
       render(<MessageViewer message={message} onClose={mockOnClose} />);
 
-      expect(DOMPurify.sanitize).toHaveBeenCalledWith('', expect.any(Object));
+      await waitFor(() => {
+        expect(sanitizeSpy).toHaveBeenCalledWith('', expect.any(Object));
+      });
     });
 
-    it('should handle sanitization of malicious scripts', () => {
+    it('should handle sanitization of malicious scripts', async () => {
       const maliciousHtml =
         '<img src="x" onerror="alert(1)"><script>alert(2)</script>';
       const message = createMockMessage({
@@ -292,10 +335,13 @@ describe('MessageViewer', () => {
 
       render(<MessageViewer message={message} onClose={mockOnClose} />);
 
-      expect(DOMPurify.sanitize).toHaveBeenCalledWith(
-        maliciousHtml,
-        expect.any(Object)
-      );
+      await waitFor(() => {
+        const DOMPurify = require('dompurify');
+        expect(DOMPurify.default.sanitize).toHaveBeenCalledWith(
+          maliciousHtml,
+          expect.any(Object)
+        );
+      });
     });
   });
 

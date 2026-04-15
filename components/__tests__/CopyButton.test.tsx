@@ -40,7 +40,7 @@ describe('CopyButton', () => {
 
     it('should use default label when not provided', () => {
       render(<CopyButton text="test" />);
-      expect(screen.getByRole('button', { name: /^copy$/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /copy copy/i })).toBeInTheDocument();
     });
   });
 
