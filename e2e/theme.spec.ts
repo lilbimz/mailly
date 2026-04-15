@@ -126,7 +126,7 @@ test.describe('Theme Management', () => {
     await expect(durationButtons.first()).toBeVisible();
 
     // Verify create button is visible
-    const createButton = page.getByRole('button', { name: /create email/i });
+    const createButton = page.getByRole('button', { name: /create.*email/i });
     await expect(createButton).toBeVisible();
   });
 
@@ -163,7 +163,7 @@ test.describe('Theme Management', () => {
     await expect(durationButtons.first()).toBeVisible();
 
     // Verify create button is visible
-    const createButton = page.getByRole('button', { name: /create email/i });
+    const createButton = page.getByRole('button', { name: /create.*email/i });
     await expect(createButton).toBeVisible();
 
     // Verify background color reflects dark theme
