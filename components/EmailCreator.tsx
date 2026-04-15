@@ -27,6 +27,7 @@ function EmailCreator({ onCreateEmail, disabled = false }: EmailCreatorProps) {
   const [selectedDomain, setSelectedDomain] = useState<string>('nondon.store');
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [generatedEmail, setGeneratedEmail] = useState<string>('awaiting_generation@mailly.sh');
 
   const handleCreateEmail = useCallback(async () => {
     setError(null);
@@ -46,111 +47,81 @@ function EmailCreator({ onCreateEmail, disabled = false }: EmailCreatorProps) {
     }
   }, [selectedDuration, selectedDomain, onCreateEmail]);
 
+  const handleCopyEmail = useCallback(() => {
+    navigator.clipboard.writeText(generatedEmail);
+  }, [generatedEmail]);
+
   return (
-    <section className="w-full max-w-2xl mx-auto p-4 sm:p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-      <h2 className="text-xl sm:text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">
-        Create Temporary Email
-      </h2>
+    <section className="w-full max-w-lg mx-auto">
+      <div className="bg-surface-container-high rounded-sm p-4 sm:p-6 border-gradient shadow-ambient">
+        <h2 className="font-display text-xs text-on-surface-variant mb-4 sm:mb-5 text-center tracking-widest uppercase font-medium">
+          Generate Instant Identity
+        </h2>
 
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3" id="duration-label">
-          Select Duration
-        </label>
-        <div className="grid grid-cols-1 xs:grid-cols-3 gap-2 sm:gap-3" role="group" aria-labelledby="duration-label">
-          {DURATION_OPTIONS.map((option) => (
+        {/* Duration Selection */}
+        <div className="mb-3 sm:mb-4">
+          <div className="grid grid-cols-3 gap-2" role="group" aria-label="Select duration">
+            {DURATION_OPTIONS.map((option) => (
+              <button
+                key={option.value}
+                onClick={() => setSelectedDuration(option.value)}
+                disabled={disabled || isCreating}
+                aria-pressed={selectedDuration === option.value}
+                className={`
+                  px-2 sm:px-3 py-2.5 sm:py-2 rounded-sm text-xs font-medium transition-all min-h-[44px] touch-manipulation
+                  ${
+                    selectedDuration === option.value
+                      ? 'bg-surface-bright text-on-surface'
+                      : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-low'
+                  }
+                  ${disabled || isCreating ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                `}
+              >
+                {option.label.replace(' minutes', 'min').replace(' hour', 'h').replace(' day', 'day')}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Generated Email Display */}
+        <div className="mb-3 sm:mb-4">
+          <div className="bg-surface-container-lowest rounded-sm p-2.5 sm:p-3 flex items-center justify-between gap-2 sm:gap-3">
+            <span className="font-mono text-xs text-on-surface-variant flex-1 truncate break-all">
+              {generatedEmail}
+            </span>
             <button
-              key={option.value}
-              onClick={() => setSelectedDuration(option.value)}
-              disabled={disabled || isCreating}
-              aria-pressed={selectedDuration === option.value}
-              aria-label={`Select duration: ${option.label}`}
-              className={`
-                px-4 sm:px-6 py-3 sm:py-3 rounded-lg font-medium transition-all min-h-[44px] touch-manipulation
-                ${
-                  selectedDuration === option.value
-                    ? 'bg-blue-600 text-white shadow-md'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                }
-                ${disabled || isCreating ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-              `}
+              onClick={handleCopyEmail}
+              className="flex-shrink-0 p-2 text-on-surface-variant hover:text-primary transition-colors min-w-[44px] min-h-[44px] touch-manipulation"
+              aria-label="Copy email address"
             >
-              {option.label}
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
             </button>
-          ))}
+          </div>
         </div>
-      </div>
 
-      <div className="mb-6">
-        <label htmlFor="domain-select" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-          Select Domain
-        </label>
-        <select
-          id="domain-select"
-          value={selectedDomain}
-          onChange={(e) => setSelectedDomain(e.target.value)}
+        {/* Create Button */}
+        <button
+          onClick={handleCreateEmail}
           disabled={disabled || isCreating}
-          aria-label="Select email domain"
-          className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          className={`
+            w-full py-3.5 sm:py-3 px-6 rounded-lg font-display font-semibold text-sm sm:text-base
+            gradient-mint text-midnight shadow-glow
+            hover:shadow-glow hover:scale-[1.02] active:scale-[0.98]
+            transition-all duration-200 min-h-[48px] sm:min-h-[44px] touch-manipulation
+            ${disabled || isCreating ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+          `}
         >
-          {DOMAIN_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-        <p className="mt-2 text-xs text-gray-600 dark:text-gray-400">
-          💡 Tip: Use nondon.store for best email delivery reliability
-        </p>
-      </div>
+          {isCreating ? 'Creating...' : 'Create Email'}
+        </button>
 
-      <button
-        onClick={handleCreateEmail}
-        disabled={disabled || isCreating}
-        aria-label={isCreating ? 'Creating email...' : 'Create temporary email'}
-        className={`
-          w-full py-3 px-6 rounded-lg font-semibold text-white transition-all min-h-[44px] touch-manipulation
-          ${
-            disabled || isCreating
-              ? 'bg-gray-400 cursor-not-allowed'
-              : 'bg-green-600 hover:bg-green-700 active:bg-green-800'
-          }
-        `}
-      >
-        {isCreating ? (
-          <span className="flex items-center justify-center">
-            <svg
-              className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              ></circle>
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              ></path>
-            </svg>
-            Creating...
-          </span>
-        ) : (
-          'Create Email'
+        {error && (
+          <div className="mt-3 p-2.5 bg-surface-container-lowest rounded-sm" role="alert">
+            <p className="text-xs text-on-surface-variant">{error}</p>
+          </div>
         )}
-      </button>
-
-      {error && (
-        <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg" role="alert">
-          <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
-        </div>
-      )}
+      </div>
     </section>
   );
 }

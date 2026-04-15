@@ -6,7 +6,9 @@ import { useAutoRefresh } from '@/lib/useAutoRefresh';
 import { markMessageAsRead } from '@/lib/localStorage';
 import EmailCreator from '@/components/EmailCreator';
 import EmailList from '@/components/EmailList';
-import InboxViewer from '@/components/InboxViewer';
+import Hero from '@/components/Hero';
+import Features from '@/components/Features';
+import Header from '@/components/Header';
 import { Message, Duration } from '@/types';
 
 // Lazy load MessageViewer component for code splitting
@@ -43,13 +45,20 @@ export default function Home() {
   // Store messages for the active email whenever they change
   useEffect(() => {
     if (activeEmail && messages.length >= 0) {
-      setMessagesByEmail(prev => ({
-        ...prev,
-        [activeEmail.id]: messages
-      }));
+      setMessagesByEmail(prev => {
+        const prevMessages = prev[activeEmail.id] || [];
+        // Only update if messages actually changed to prevent infinite loop
+        if (JSON.stringify(prevMessages) !== JSON.stringify(messages)) {
+          return {
+            ...prev,
+            [activeEmail.id]: messages
+          };
+        }
+        return prev;
+      });
       updateUnreadCount(activeEmail.id, messages);
     }
-  }, [activeEmail, messages, updateUnreadCount]);
+  }, [activeEmail?.id, messages, updateUnreadCount]);
 
   // Memoize current messages to avoid recalculating on every render
   const currentMessages = useMemo(() => {
@@ -71,8 +80,11 @@ export default function Home() {
 
   const handleEmailSelect = useCallback((emailId: string) => {
     selectEmail(emailId);
-    setSelectedMessage(null); // Clear selected message when switching emails
-  }, [selectEmail]);
+    // Only clear selected message if we're switching to a different email or deselecting
+    if (activeEmail?.id !== emailId) {
+      setSelectedMessage(null);
+    }
+  }, [selectEmail, activeEmail]);
 
   const handleEmailDelete = useCallback(async (emailId: string) => {
     try {
@@ -119,83 +131,63 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+    <main className="min-h-screen bg-midnight">
       {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-            Mailly
-          </h1>
-          <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-            Create temporary disposable email addresses
-          </p>
-        </div>
-      </header>
+      <Header />
 
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-8">
-        {/* Email Creator Section */}
-        <div className="mb-6 sm:mb-8">
-          <EmailCreator onCreateEmail={handleCreateEmail} disabled={isCreatingEmail} />
-        </div>
+      {/* Hero Section */}
+      <Hero />
 
-        {/* Email List Section */}
-        <div className="mb-6 sm:mb-8">
+      {/* Email Creator Section */}
+      <div className="max-w-lg mx-auto px-3 sm:px-4 lg:px-8 -mt-2 sm:-mt-4">
+        <EmailCreator onCreateEmail={handleCreateEmail} disabled={isCreatingEmail} />
+      </div>
+
+      {/* Email List Section with Integrated Inbox */}
+      {emails.length > 0 && (
+        <div className="max-w-4xl mx-auto px-3 sm:px-4 lg:px-8 mt-12 sm:mt-16">
           <EmailList
             emails={emails}
             activeEmailId={activeEmail?.id || null}
             onEmailSelect={handleEmailSelect}
             onEmailDelete={handleEmailDelete}
+            activeEmail={activeEmail}
+            currentMessages={currentMessages}
+            onMessageSelect={handleMessageSelect}
+            isRefreshing={isRefreshing}
           />
         </div>
+      )}
 
-        {/* Inbox Viewer Section */}
-        {activeEmail && (
-          <div className="mb-6 sm:mb-8">
-            <InboxViewer
-              email={activeEmail}
-              messages={currentMessages}
-              onMessageSelect={handleMessageSelect}
-              isRefreshing={isRefreshing}
-            />
+      {/* Features Section */}
+      <Features />
+
+      {/* Footer */}
+      <footer className="bg-surface-container-lowest py-8 sm:py-12 mt-16 sm:mt-24">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4 sm:gap-6">
+            <div className="text-center md:text-left">
+              <h3 className="font-display text-sm sm:text-base text-on-surface mb-1 sm:mb-2">Mailly</h3>
+              <p className="text-xs sm:text-sm text-on-surface-variant">© 2026 Mailly Sanctuary. Built for the ephemeral.</p>
+            </div>
+            <div className="flex flex-wrap justify-center gap-4 sm:gap-6 text-xs sm:text-sm text-on-surface-variant">
+              <a href="#" className="hover:text-primary transition-colors">Privacy Policy</a>
+              <a href="#" className="hover:text-primary transition-colors">Terms of Service</a>
+              <a href="#" className="hover:text-primary transition-colors">Status</a>
+              <a href="#" className="hover:text-primary transition-colors">Contact</a>
+            </div>
           </div>
-        )}
-
-        {/* Empty State */}
-        {emails.length === 0 && (
-          <section className="text-center py-8 sm:py-12">
-            <svg
-              className="mx-auto h-12 sm:h-16 w-12 sm:w-16 text-gray-400 dark:text-gray-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-              />
-            </svg>
-            <h3 className="mt-4 text-base sm:text-lg font-medium text-gray-900 dark:text-white">
-              No temporary emails yet
-            </h3>
-            <p className="mt-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-              Create your first temporary email address to get started
-            </p>
-          </section>
-        )}
-      </div>
+        </div>
+      </footer>
 
       {/* Message Viewer Modal */}
       {selectedMessage && (
         <Suspense fallback={
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-3xl w-full p-8 flex items-center justify-center">
+            <div className="glass rounded-xl shadow-ambient max-w-3xl w-full p-8 flex items-center justify-center">
               <div className="flex flex-col items-center gap-3">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-                <p className="text-gray-600 dark:text-gray-400">Loading message...</p>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                <p className="text-on-surface-variant">Loading message...</p>
               </div>
             </div>
           </div>

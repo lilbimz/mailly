@@ -3,8 +3,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { TemporaryEmail, Duration, Message } from '@/types';
 import { emailApiClient } from './emailApiClient';
-import { cleanupExpiredEmails, saveEmail, removeEmail, loadEmails, getMessagesReadStatus } from './localStorage';
-import { isEmailExpired } from './utils';
+import { cleanupExpiredEmails, saveEmail, removeEmail, loadEmails } from './localStorage';
 import { useNotifications } from './useNotifications';
 
 /**
@@ -147,18 +146,29 @@ export function useEmailManager(): UseEmailManagerReturn {
 
   /**
    * Select an email to make it active
+   * If the same email is clicked again, it will be deselected (toggle behavior)
    * Sets the active email ID for viewing inbox and persists to localStorage
    */
   const selectEmail = useCallback((emailId: string) => {
-    setActiveEmailId(emailId);
-    setError(null);
-    
-    // Persist active email ID to localStorage
-    try {
-      localStorage.setItem(ACTIVE_EMAIL_KEY, emailId);
-    } catch (err) {
-      console.error('Failed to save active email ID:', err);
-    }
+    setActiveEmailId((prevActiveId) => {
+      // Toggle: if clicking the same email, deselect it
+      const newActiveId = prevActiveId === emailId ? null : emailId;
+      
+      setError(null);
+      
+      // Persist active email ID to localStorage
+      try {
+        if (newActiveId) {
+          localStorage.setItem(ACTIVE_EMAIL_KEY, newActiveId);
+        } else {
+          localStorage.removeItem(ACTIVE_EMAIL_KEY);
+        }
+      } catch (err) {
+        console.error('Failed to save active email ID:', err);
+      }
+      
+      return newActiveId;
+    });
   }, []);
 
   /**
@@ -201,6 +211,10 @@ export function useEmailManager(): UseEmailManagerReturn {
         if (email.id === emailId) {
           // Count unread messages for this email
           const unreadCount = messages.filter(msg => !msg.isRead).length;
+          // Only update if unread count actually changed
+          if (email.unreadCount === unreadCount) {
+            return email;
+          }
           return {
             ...email,
             unreadCount,
@@ -209,7 +223,7 @@ export function useEmailManager(): UseEmailManagerReturn {
         return email;
       });
     });
-  }, []);
+  }, [setEmails]);
 
   // Initialize: Load emails from localStorage and run cleanup on mount
   useEffect(() => {

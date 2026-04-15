@@ -6,6 +6,9 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 export const metadata: Metadata = {
   title: "Mailly",
   description: "Temporary disposable email addresses",
+  icons: {
+    icon: "/favicon-mailly.png",
+  },
 };
 
 export default function RootLayout({

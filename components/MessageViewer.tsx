@@ -93,24 +93,28 @@ function MessageViewer({ message, onClose }: MessageViewerProps) {
 
   return (
     <div 
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50"
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="message-viewer-title"
+      onClick={onClose}
     >
-      <article className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-3xl w-full max-h-[95vh] sm:max-h-[90vh] flex flex-col">
+      <article 
+        className="bg-white dark:bg-gray-800 rounded-t-2xl sm:rounded-lg shadow-xl max-w-3xl w-full max-h-[92vh] sm:max-h-[90vh] flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
-        <header className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-200 dark:border-gray-700">
+        <header className="flex items-center justify-between p-4 sm:p-5 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
           <h2 
             id="message-viewer-title"
-            className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white"
+            className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white"
           >
             Message Details
           </h2>
           <button
             ref={closeButtonRef}
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors p-2 rounded min-w-[44px] min-h-[44px] touch-manipulation"
+            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors p-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 min-w-[44px] min-h-[44px] touch-manipulation"
             aria-label="Close message (Press Escape)"
           >
             <svg
@@ -131,39 +135,39 @@ function MessageViewer({ message, onClose }: MessageViewerProps) {
         </header>
 
         {/* Message Details */}
-        <div className="overflow-y-auto flex-1 p-4 sm:p-6">
-          <div className="space-y-3 sm:space-y-4">
+        <div className="overflow-y-auto flex-1 p-4 sm:p-6 overscroll-contain">
+          <div className="space-y-4">
             {/* From */}
             <div>
-              <label className="block text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">
                 From
               </label>
-              <p className="text-sm sm:text-base text-gray-900 dark:text-white break-all">
+              <p className="text-sm text-gray-900 dark:text-white break-all">
                 {message.from}
               </p>
             </div>
 
             {/* Subject */}
             <div>
-              <label className="block text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">
                 Subject
               </label>
-              <p className="text-sm sm:text-base text-gray-900 dark:text-white font-medium break-words">
+              <p className="text-sm text-gray-900 dark:text-white font-medium break-words">
                 {message.subject}
               </p>
             </div>
 
             {/* Date */}
             <div>
-              <label className="block text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">
                 Received
               </label>
-              <p className="text-sm sm:text-base text-gray-900 dark:text-white">{formattedDate}</p>
+              <p className="text-sm text-gray-900 dark:text-white">{formattedDate}</p>
             </div>
 
             {/* Message Body */}
             <div>
-              <label className="block text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">
                 Message
               </label>
               <div className="mt-2 p-3 sm:p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
@@ -173,11 +177,11 @@ function MessageViewer({ message, onClose }: MessageViewerProps) {
                   </div>
                 ) : message.isHtml ? (
                   <div
-                    className="prose prose-sm sm:prose dark:prose-invert max-w-none text-gray-900 dark:text-white break-words"
+                    className="prose prose-sm dark:prose-invert max-w-none text-gray-900 dark:text-white break-words [&_a]:break-all"
                     dangerouslySetInnerHTML={{ __html: sanitizedBody }}
                   />
                 ) : (
-                  <pre className="whitespace-pre-wrap font-sans text-sm sm:text-base text-gray-900 dark:text-white break-words">
+                  <pre className="whitespace-pre-wrap font-sans text-sm text-gray-900 dark:text-white break-words">
                     {sanitizedBody}
                   </pre>
                 )}
@@ -187,10 +191,10 @@ function MessageViewer({ message, onClose }: MessageViewerProps) {
         </div>
 
         {/* Footer */}
-        <footer className="p-3 sm:p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end">
+        <footer className="p-4 sm:p-5 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3 flex-shrink-0 safe-area-inset-bottom">
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors font-medium min-h-[44px] touch-manipulation"
+            className="w-full sm:w-auto px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 active:bg-blue-700 transition-colors font-medium min-h-[48px] sm:min-h-[44px] touch-manipulation"
           >
             Close
           </button>

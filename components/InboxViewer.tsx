@@ -43,15 +43,20 @@ function InboxViewer({
   }, []);
 
   return (
-    <section className="w-full max-w-4xl mx-auto p-4 sm:p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md" aria-live="polite" aria-atomic="false">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-2">
-        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
-          Inbox
-        </h2>
+    <section className="w-full bg-surface-container-low rounded-sm p-3 sm:p-5 shadow-ambient" aria-live="polite" aria-atomic="false">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-5 gap-2">
+        <div>
+          <h2 className="font-display text-lg sm:text-xl font-bold text-on-surface mb-1">
+            Inbox
+          </h2>
+          <p className="text-xs text-on-surface-variant">
+            {sortedMessages.length} {sortedMessages.length === 1 ? 'message' : 'messages'}
+          </p>
+        </div>
         {isRefreshing && (
-          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400" aria-live="polite">
+          <div className="flex items-center gap-2 text-xs text-on-surface-variant" aria-live="polite">
             <svg
-              className="animate-spin h-4 w-4"
+              className="animate-spin h-3.5 w-3.5"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
@@ -76,16 +81,16 @@ function InboxViewer({
         )}
       </div>
 
-      <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 break-all">
-          Email: <span className="font-mono text-gray-900 dark:text-gray-100">{email.email}</span>
+      <div className="mb-4 sm:mb-5 p-2.5 sm:p-3 bg-surface-container-lowest rounded-sm">
+        <p className="text-xs text-on-surface-variant break-all">
+          Email: <span className="font-mono text-on-surface">{email.email}</span>
         </p>
       </div>
 
       {sortedMessages.length === 0 ? (
-        <div className="text-center py-12">
+        <div className="text-center py-8">
           <svg
-            className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-600"
+            className="mx-auto h-10 w-10 text-on-surface-variant opacity-50"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -99,10 +104,10 @@ function InboxViewer({
               d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
             />
           </svg>
-          <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-gray-100">
+          <h3 className="mt-3 text-base font-medium text-on-surface">
             No messages yet
           </h3>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+          <p className="mt-1 text-xs text-on-surface-variant">
             Messages sent to this email will appear here
           </p>
         </div>
@@ -112,31 +117,31 @@ function InboxViewer({
             <li key={message.id}>
               <button
                 onClick={() => onMessageSelect(message.id)}
-                className="w-full text-left p-3 sm:p-4 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors border border-gray-200 dark:border-gray-600 min-h-[44px] touch-manipulation"
+                className="w-full text-left p-2.5 sm:p-3 bg-surface-container hover:bg-surface-container-high rounded-sm transition-all min-h-[56px] touch-manipulation"
                 aria-label={`Message from ${message.from}: ${message.subject || '(No subject)'}${!message.isRead ? ' (unread)' : ''}`}
               >
               <div className="flex items-start justify-between gap-2 sm:gap-4">
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <p className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-gray-100 truncate break-all">
-                      {message.from}
-                    </p>
+                  <div className="flex items-center gap-2 mb-1.5">
                     {!message.isRead && (
                       <span 
-                        className="flex-shrink-0 w-2 h-2 bg-blue-600 rounded-full"
+                        className="flex-shrink-0 w-1.5 h-1.5 bg-secondary-fixed-dim rounded-full shadow-glow"
                         aria-label="Unread"
                       ></span>
                     )}
+                    <p className="text-xs font-semibold text-on-surface truncate break-all">
+                      {message.from}
+                    </p>
                   </div>
-                  <p className="text-sm sm:text-base font-medium text-gray-800 dark:text-gray-200 truncate mb-1">
+                  <p className="text-sm font-medium text-on-surface truncate mb-1">
                     {message.subject || '(No subject)'}
                   </p>
-                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">
+                  <p className="text-xs text-on-surface-variant line-clamp-2 sm:truncate">
                     {message.preview}
                   </p>
                 </div>
-                <div className="flex-shrink-0">
-                  <p className="text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap">
+                <div className="flex-shrink-0 pt-0.5">
+                  <p className="text-xs text-on-surface-variant whitespace-nowrap">
                     {formatTimestamp(message.receivedAt)}
                   </p>
                 </div>
