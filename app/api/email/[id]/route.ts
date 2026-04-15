@@ -123,7 +123,7 @@ export async function DELETE(
           success: false,
           error: {
             code: ERROR_CODES.API_ERROR,
-            message: boomlifyData.error?.message || 'Failed to delete email',
+            message: (boomlifyData as any).error?.message || 'Failed to delete email',
           },
         },
         { status: 500 }
