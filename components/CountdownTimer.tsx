@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { formatTimeRemaining, isEmailExpired } from '@/lib/utils';
 
 interface CountdownTimerProps {
@@ -8,7 +8,7 @@ interface CountdownTimerProps {
   onExpire: () => void;
 }
 
-export default function CountdownTimer({ expiresAt, onExpire }: CountdownTimerProps) {
+function CountdownTimer({ expiresAt, onExpire }: CountdownTimerProps) {
   const [timeRemaining, setTimeRemaining] = useState<string>(() => 
     formatTimeRemaining(expiresAt)
   );
@@ -43,7 +43,7 @@ export default function CountdownTimer({ expiresAt, onExpire }: CountdownTimerPr
   }, [expiresAt, onExpire, hasExpired]);
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2" aria-live="polite" aria-atomic="true">
       {hasExpired ? (
         <span className="text-sm font-medium text-red-600 dark:text-red-400">
           Expired
@@ -56,6 +56,7 @@ export default function CountdownTimer({ expiresAt, onExpire }: CountdownTimerPr
             stroke="currentColor"
             viewBox="0 0 24 24"
             xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
           >
             <path
               strokeLinecap="round"
@@ -72,3 +73,6 @@ export default function CountdownTimer({ expiresAt, onExpire }: CountdownTimerPr
     </div>
   );
 }
+
+// Memoize the component to prevent unnecessary re-renders
+export default memo(CountdownTimer);

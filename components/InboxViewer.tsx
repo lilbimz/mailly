@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo, memo, useCallback } from 'react';
 import { TemporaryEmail, Message } from '@/types';
 
 interface InboxViewerProps {
@@ -9,21 +10,23 @@ interface InboxViewerProps {
   isRefreshing: boolean;
 }
 
-export default function InboxViewer({
+function InboxViewer({
   email,
   messages,
   onMessageSelect,
   isRefreshing,
 }: InboxViewerProps) {
-  // Sort messages by receivedAt descending (newest first)
-  const sortedMessages = [...messages].sort((a, b) => {
-    const dateA = new Date(a.receivedAt).getTime();
-    const dateB = new Date(b.receivedAt).getTime();
-    return dateB - dateA;
-  });
+  // Memoize sorted messages to avoid re-sorting on every render
+  const sortedMessages = useMemo(() => {
+    return [...messages].sort((a, b) => {
+      const dateA = new Date(a.receivedAt).getTime();
+      const dateB = new Date(b.receivedAt).getTime();
+      return dateB - dateA;
+    });
+  }, [messages]);
 
-  // Format timestamp for display
-  const formatTimestamp = (date: Date): string => {
+  // Memoize timestamp formatter to avoid recreating on every render
+  const formatTimestamp = useCallback((date: Date): string => {
     const messageDate = new Date(date);
     const now = new Date();
     const diffMs = now.getTime() - messageDate.getTime();
@@ -37,21 +40,22 @@ export default function InboxViewer({
     if (diffDays < 7) return `${diffDays}d ago`;
 
     return messageDate.toLocaleDateString();
-  };
+  }, []);
 
   return (
-    <div className="w-full max-w-4xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+    <section className="w-full max-w-4xl mx-auto p-4 sm:p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md" aria-live="polite" aria-atomic="false">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-2">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
           Inbox
         </h2>
         {isRefreshing && (
-          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400" aria-live="polite">
             <svg
               className="animate-spin h-4 w-4"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
+              aria-hidden="true"
             >
               <circle
                 className="opacity-25"
@@ -73,7 +77,7 @@ export default function InboxViewer({
       </div>
 
       <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 break-all">
           Email: <span className="font-mono text-gray-900 dark:text-gray-100">{email.email}</span>
         </p>
       </div>
@@ -86,6 +90,7 @@ export default function InboxViewer({
             stroke="currentColor"
             viewBox="0 0 24 24"
             xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
           >
             <path
               strokeLinecap="round"
@@ -102,40 +107,48 @@ export default function InboxViewer({
           </p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <ul className="space-y-2" role="list">
           {sortedMessages.map((message) => (
-            <button
-              key={message.id}
-              onClick={() => onMessageSelect(message.id)}
-              className="w-full text-left p-4 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors border border-gray-200 dark:border-gray-600"
-            >
-              <div className="flex items-start justify-between gap-4">
+            <li key={message.id}>
+              <button
+                onClick={() => onMessageSelect(message.id)}
+                className="w-full text-left p-3 sm:p-4 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors border border-gray-200 dark:border-gray-600 min-h-[44px] touch-manipulation"
+                aria-label={`Message from ${message.from}: ${message.subject || '(No subject)'}${!message.isRead ? ' (unread)' : ''}`}
+              >
+              <div className="flex items-start justify-between gap-2 sm:gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
+                    <p className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-gray-100 truncate break-all">
                       {message.from}
                     </p>
                     {!message.isRead && (
-                      <span className="flex-shrink-0 w-2 h-2 bg-blue-600 rounded-full"></span>
+                      <span 
+                        className="flex-shrink-0 w-2 h-2 bg-blue-600 rounded-full"
+                        aria-label="Unread"
+                      ></span>
                     )}
                   </div>
-                  <p className="text-base font-medium text-gray-800 dark:text-gray-200 truncate mb-1">
+                  <p className="text-sm sm:text-base font-medium text-gray-800 dark:text-gray-200 truncate mb-1">
                     {message.subject || '(No subject)'}
                   </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">
                     {message.preview}
                   </p>
                 </div>
                 <div className="flex-shrink-0">
-                  <p className="text-xs text-gray-600 dark:text-gray-400">
+                  <p className="text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap">
                     {formatTimestamp(message.receivedAt)}
                   </p>
                 </div>
               </div>
             </button>
+          </li>
           ))}
-        </div>
+        </ul>
       )}
-    </div>
+    </section>
   );
 }
+
+// Memoize the component to prevent unnecessary re-renders
+export default memo(InboxViewer);

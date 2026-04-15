@@ -1,21 +1,24 @@
 'use client';
 
+import { memo, useCallback } from 'react';
+
 interface ThemeToggleProps {
   theme: 'light' | 'dark';
   onThemeChange: (theme: 'light' | 'dark') => void;
 }
 
-export default function ThemeToggle({ theme, onThemeChange }: ThemeToggleProps) {
-  const handleToggle = () => {
+function ThemeToggle({ theme, onThemeChange }: ThemeToggleProps) {
+  const handleToggle = useCallback(() => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
     onThemeChange(newTheme);
-  };
+  }, [theme, onThemeChange]);
 
   return (
     <button
       onClick={handleToggle}
-      className="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+      className="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors min-w-[44px] min-h-[44px] touch-manipulation"
       aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+      aria-pressed={theme === 'dark'}
     >
       {theme === 'light' ? (
         // Moon icon for dark mode
@@ -53,3 +56,6 @@ export default function ThemeToggle({ theme, onThemeChange }: ThemeToggleProps) 
     </button>
   );
 }
+
+// Memoize the component to prevent unnecessary re-renders
+export default memo(ThemeToggle);

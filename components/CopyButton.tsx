@@ -1,17 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, memo, useCallback } from 'react';
 
 interface CopyButtonProps {
   text: string;
   label?: string;
 }
 
-export function CopyButton({ text, label = 'Copy' }: CopyButtonProps) {
+function CopyButton({ text, label = 'Copy' }: CopyButtonProps) {
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleCopy = async () => {
+  const handleCopy = useCallback(async () => {
     setError(null);
 
     // Check if Clipboard API is supported
@@ -44,13 +44,14 @@ export function CopyButton({ text, label = 'Copy' }: CopyButtonProps) {
         setError(null);
       }, 2000);
     }
-  };
+  }, [text]);
 
   return (
     <div className="flex items-center gap-2">
       <button
         onClick={handleCopy}
-        className={`px-3 py-2 rounded-md font-medium transition-colors ${
+        aria-label={copied ? 'Copied to clipboard' : error ? 'Copy failed' : `Copy ${label.toLowerCase()}`}
+        className={`px-3 py-2 rounded-md font-medium transition-colors min-h-[44px] touch-manipulation ${
           copied
             ? 'bg-green-500 dark:bg-green-600 text-white'
             : error
@@ -61,7 +62,10 @@ export function CopyButton({ text, label = 'Copy' }: CopyButtonProps) {
       >
         {copied ? '✓ Copied!' : error ? '✗ Error' : label}
       </button>
-      {error && <span className="text-sm text-red-600 dark:text-red-400">{error}</span>}
+      {error && <span className="text-xs sm:text-sm text-red-600 dark:text-red-400">{error}</span>}
     </div>
   );
 }
+
+// Memoize the component to prevent unnecessary re-renders
+export const CopyButton = memo(CopyButton);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, memo, useCallback } from 'react';
 import { TemporaryEmail } from '@/types';
 import CountdownTimer from './CountdownTimer';
 
@@ -11,7 +11,7 @@ interface EmailListProps {
   onEmailDelete: (emailId: string) => void;
 }
 
-export default function EmailList({
+function EmailList({
   emails,
   activeEmailId,
   onEmailSelect,
@@ -20,12 +20,12 @@ export default function EmailList({
   const [deletingEmailId, setDeletingEmailId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
-  const handleDeleteClick = (emailId: string, e: React.MouseEvent) => {
+  const handleDeleteClick = useCallback((emailId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     setConfirmDeleteId(emailId);
-  };
+  }, []);
 
-  const handleConfirmDelete = async (emailId: string, e: React.MouseEvent) => {
+  const handleConfirmDelete = useCallback(async (emailId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     setDeletingEmailId(emailId);
     setConfirmDeleteId(null);
@@ -37,22 +37,22 @@ export default function EmailList({
     } finally {
       setDeletingEmailId(null);
     }
-  };
+  }, [onEmailDelete]);
 
-  const handleCancelDelete = (e: React.MouseEvent) => {
+  const handleCancelDelete = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     setConfirmDeleteId(null);
-  };
+  }, []);
 
-  const handleExpire = (emailId: string) => {
+  const handleExpire = useCallback((emailId: string) => {
     // Email expired, could trigger cleanup or notification
     console.log(`Email ${emailId} has expired`);
-  };
+  }, []);
 
   if (emails.length === 0) {
     return (
-      <div className="w-full max-w-4xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">
+      <section className="w-full max-w-4xl mx-auto p-4 sm:p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+        <h2 className="text-xl sm:text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">
           Your Emails
         </h2>
         <div className="text-center py-12">
@@ -62,6 +62,7 @@ export default function EmailList({
             stroke="currentColor"
             viewBox="0 0 24 24"
             xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
           >
             <path
               strokeLinecap="round"
@@ -77,22 +78,33 @@ export default function EmailList({
             Create a temporary email to get started
           </p>
         </div>
-      </div>
+      </section>
     );
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">
+    <section className="w-full max-w-4xl mx-auto p-4 sm:p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+      <h2 className="text-xl sm:text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">
         Your Emails
       </h2>
-      <div className="space-y-3">
+      <ul className="space-y-2 sm:space-y-3" role="list">
         {emails.map((email) => (
-          <div
+          <li
             key={email.id}
             onClick={() => onEmailSelect(email.id)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onEmailSelect(email.id);
+              }
+            }}
+            tabIndex={0}
+            role="button"
+            aria-pressed={activeEmailId === email.id}
+            aria-current={activeEmailId === email.id ? 'true' : undefined}
+            aria-label={`Email ${email.email}${email.unreadCount > 0 ? `, ${email.unreadCount} unread messages` : ''}`}
             className={`
-              p-4 rounded-lg border-2 transition-all cursor-pointer
+              p-3 sm:p-4 rounded-lg border-2 transition-all cursor-pointer min-h-[44px] touch-manipulation
               ${
                 activeEmailId === email.id
                   ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
@@ -100,10 +112,10 @@ export default function EmailList({
               }
             `}
           >
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start justify-between gap-2 sm:gap-4">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-2">
-                  <p className="text-sm font-mono text-gray-900 dark:text-gray-100 truncate">
+                  <p className="text-xs sm:text-sm font-mono text-gray-900 dark:text-gray-100 truncate break-all">
                     {email.email}
                   </p>
                   {email.unreadCount > 0 && (
@@ -112,7 +124,7 @@ export default function EmailList({
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                   <CountdownTimer
                     expiresAt={email.expiresAt}
                     onExpire={() => handleExpire(email.id)}
@@ -121,18 +133,20 @@ export default function EmailList({
               </div>
               <div className="flex-shrink-0">
                 {confirmDeleteId === email.id ? (
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                     <button
                       onClick={(e) => handleConfirmDelete(email.id, e)}
                       disabled={deletingEmailId === email.id}
-                      className="px-3 py-1 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded transition-colors disabled:opacity-50"
+                      className="px-3 py-2 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded transition-colors disabled:opacity-50 min-h-[44px] touch-manipulation"
+                      aria-label="Confirm delete email"
                     >
                       Confirm
                     </button>
                     <button
                       onClick={handleCancelDelete}
                       disabled={deletingEmailId === email.id}
-                      className="px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 rounded transition-colors disabled:opacity-50"
+                      className="px-3 py-2 text-xs font-medium text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 rounded transition-colors disabled:opacity-50 min-h-[44px] touch-manipulation"
+                      aria-label="Cancel delete"
                     >
                       Cancel
                     </button>
@@ -141,7 +155,7 @@ export default function EmailList({
                   <button
                     onClick={(e) => handleDeleteClick(email.id, e)}
                     disabled={deletingEmailId === email.id}
-                    className="p-2 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition-colors disabled:opacity-50"
+                    className="p-2 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition-colors disabled:opacity-50 min-w-[44px] min-h-[44px] touch-manipulation"
                     aria-label="Delete email"
                   >
                     {deletingEmailId === email.id ? (
@@ -150,6 +164,7 @@ export default function EmailList({
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
+                        aria-hidden="true"
                       >
                         <circle
                           className="opacity-25"
@@ -172,6 +187,7 @@ export default function EmailList({
                         stroke="currentColor"
                         viewBox="0 0 24 24"
                         xmlns="http://www.w3.org/2000/svg"
+                        aria-hidden="true"
                       >
                         <path
                           strokeLinecap="round"
@@ -185,9 +201,12 @@ export default function EmailList({
                 )}
               </div>
             </div>
-          </div>
+          </li>
         ))}
-      </div>
-    </div>
+      </ul>
+    </section>
   );
 }
+
+// Memoize the component to prevent unnecessary re-renders
+export default memo(EmailList);
